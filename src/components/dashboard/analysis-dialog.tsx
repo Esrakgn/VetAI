@@ -148,9 +148,6 @@ export function AnalysisDialog({ open, onOpenChange, location, feedId }: Analysi
           title: 'Kareler eksik',
           description: 'Lütfen analizden önce videodan kareleri yakalayın.',
         });
-        // Prevent form submission by not calling the action
-        // We can't easily stop the form submission from here, so we check in the action.
-        // For a better UX, the button should be disabled.
         return; 
       }
       frames.forEach((frame) => {
@@ -167,12 +164,18 @@ export function AnalysisDialog({ open, onOpenChange, location, feedId }: Analysi
         title: 'Analiz Başarısız',
         description: state.error,
       });
+    } else if (state.anomalies && state.anomalies.length > 0) {
+      toast({
+        variant: 'destructive',
+        title: 'Uyarı: Anormallik Tespit Edildi',
+        description: `${state.anomalies.length} adet anormal davranış bulundu. Detaylar için sonucu inceleyin.`,
+      });
     } else if (state.anomalies) {
        toast({
         variant: 'default',
         className: "bg-success text-success-foreground",
         title: 'Analiz Tamamlandı',
-        description: `${state.anomalies.length} anormallik bulundu.`,
+        description: `Anormal bir davranış tespit edilmedi.`,
       });
     }
   }, [state, toast]);
