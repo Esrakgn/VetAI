@@ -7,7 +7,7 @@ export function Logo({ className }: { className?: string }) {
       <div className="p-2 bg-primary rounded-lg">
         <HeartPulse className="h-6 w-6 text-primary-foreground" />
       </div>
-      <span className="text-2xl font-bold font-headline text-foreground">BehavioVet</span>
+      <span className="text-2xl font-bold font-headline text-foreground">VetAI</span>
     </div>
   );
 }

@@ -4,8 +4,8 @@ import { ThemeProvider } from '@/components/theme-provider';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'BehavioVet',
-  description: 'Yapay zeka destekli hayvan davranış analizi',
+  title: 'VetAI',
+  description: 'Yapay zeka destekli veteriner analizi',
 };
 
 export default function RootLayout({

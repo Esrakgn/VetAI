@@ -27,7 +27,7 @@ export function Header() {
               <DropdownMenuTrigger asChild>
                 <Avatar className="h-9 w-9 cursor-pointer">
                   <AvatarImage src="https://placehold.co/100x100" alt="User Avatar" />
-                  <AvatarFallback>BV</AvatarFallback>
+                  <AvatarFallback>VA</AvatarFallback>
                 </Avatar>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
