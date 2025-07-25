@@ -56,6 +56,7 @@ const initialAlerts: Alert[] = [
 
 export default function Home() {
   const [alerts, setAlerts] = useState<Alert[]>(initialAlerts);
+  const [activeTab, setActiveTab] = useState('alerts');
 
   const addAlert = (location: string, anomaly: string) => {
     const newAlert: Alert = {
@@ -66,6 +67,7 @@ export default function Home() {
       severity: 'Yüksek'
     };
     setAlerts(prevAlerts => [newAlert, ...prevAlerts]);
+    setActiveTab('alerts');
   };
 
   return (
@@ -80,6 +82,12 @@ export default function Home() {
               <SidebarMenuButton isActive>
                 <LayoutDashboard />
                 Kontrol Paneli
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+             <SidebarMenuItem>
+              <SidebarMenuButton onClick={() => setActiveTab('diagnosis')}>
+                <Stethoscope />
+                Hastalık Teşhisi
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
@@ -123,7 +131,7 @@ export default function Home() {
                   <VideoFeeds onAnalyze={addAlert} />
                 </div>
                 <div className="space-y-8">
-                  <Tabs defaultValue="alerts" className="w-full">
+                  <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                     <TabsList className="grid w-full grid-cols-3">
                       <TabsTrigger value="alerts">Son Alarmlar</TabsTrigger>
                       <TabsTrigger value="predictor">Neden Tahmini</TabsTrigger>
