@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { handlePredictCause } from '@/lib/actions';
 import { Loader2, AlertTriangle, Lightbulb } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 const initialState = {
   probableCauses: null,

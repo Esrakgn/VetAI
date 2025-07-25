@@ -6,7 +6,7 @@ import { predictAnomalyCause } from '@/ai/flows/predict-anomaly-cause';
 
 // Schema for analyzeBehavior form
 const AnalyzeSchema = z.object({
-  videoDataUri: z.string().min(1, 'Video file is required.'),
+  frames: z.array(z.string()).min(1, 'At least one video frame is required.'),
   behaviorDescription: z.string().min(10, 'Behavior description is too short.'),
   feedId: z.string(),
 });
@@ -18,8 +18,12 @@ type AnalyzeState = {
 };
 
 export async function handleAnalyzeBehavior(prevState: AnalyzeState, formData: FormData): Promise<AnalyzeState> {
+  const frameEntries = Array.from(formData.entries())
+    .filter(([key]) => key.startsWith('frames['))
+    .map(([, value]) => value as string);
+
   const validatedFields = AnalyzeSchema.safeParse({
-    videoDataUri: formData.get('videoDataUri'),
+    frames: frameEntries,
     behaviorDescription: formData.get('behaviorDescription'),
     feedId: formData.get('feedId'),
   });
@@ -28,7 +32,7 @@ export async function handleAnalyzeBehavior(prevState: AnalyzeState, formData: F
     return {
       anomalies: null,
       causePrediction: null,
-      error: validatedFields.error.flatten().fieldErrors.videoDataUri?.[0] || validatedFields.error.flatten().fieldErrors.behaviorDescription?.[0] || 'Invalid input.',
+      error: validatedFields.error.flatten().fieldErrors.frames?.[0] || validatedFields.error.flatten().fieldErrors.behaviorDescription?.[0] || 'Invalid input.',
     };
   }
 
@@ -51,8 +55,8 @@ export async function handleAnalyzeBehavior(prevState: AnalyzeState, formData: F
 
 // Schema for predictAnomalyCause form
 const PredictSchema = z.object({
-    animalId: z.string().min(1, 'Animal ID is required.'),
-    observedBehavior: z.string().min(10, 'Observed behavior description is too short.'),
+    animalId: z.string().min(1, 'Hayvan ID\'si gerekli.'),
+    observedBehavior: z.string().min(10, 'Gözlenen davranış açıklaması çok kısa.'),
     historicalData: z.string().optional(),
 });
 
@@ -71,7 +75,7 @@ export async function handlePredictCause(prevState: PredictState, formData: Form
     if (!validatedFields.success) {
         return {
             probableCauses: null,
-            error: validatedFields.error.flatten().fieldErrors.animalId?.[0] || validatedFields.error.flatten().fieldErrors.observedBehavior?.[0] || 'Invalid input.',
+            error: validatedFields.error.flatten().fieldErrors.animalId?.[0] || validatedFields.error.flatten().fieldErrors.observedBehavior?.[0] || 'Geçersiz girdi.',
         };
     }
 
@@ -88,7 +92,7 @@ export async function handlePredictCause(prevState: PredictState, formData: Form
     } catch (e: any) {
         return {
             probableCauses: null,
-            error: e.message || 'An unknown error occurred during prediction.',
+            error: e.message || 'Tahmin sırasında bilinmeyen bir hata oluştu.',
         };
     }
 }

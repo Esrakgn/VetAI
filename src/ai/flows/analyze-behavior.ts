@@ -12,10 +12,10 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const AnalyzeBehaviorInputSchema = z.object({
-  videoDataUri: z
-    .string()
+  frames: z
+    .array(z.string())
     .describe(
-      "A video of animals, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
+      "A series of frames from a video, each as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
     ),
   behaviorDescription: z.string().describe('A description of the expected animal behaviors.'),
 });
@@ -37,14 +37,17 @@ const analyzeBehaviorPrompt = ai.definePrompt({
   output: {schema: AnalyzeBehaviorOutputSchema},
   prompt: `You are an AI assistant that analyzes animal behavior in video feeds.
 
-  You will receive a video and a description of the expected behavior.
-  Your task is to identify any anomalous behaviors and predict their probable causes.
+  You will receive a series of frames from a video and a description of the expected behavior.
+  Your task is to identify any anomalous behaviors shown in the frames and predict their probable causes.
+  
+  {{#each frames}}
+  Frame: {{media url=this}}
+  {{/each}}
 
-  Video: {{media url=videoDataUri}}
   Expected Behavior: {{{behaviorDescription}}}
 
   Anomalies:
-  - List any unusual behaviors observed in the video.
+  - List any unusual behaviors observed in the video frames.
 
   Cause Prediction:
   - Provide a ranked listing of probable causes for the observed anomalies.

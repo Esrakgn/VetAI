@@ -15,8 +15,9 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { handleAnalyzeBehavior } from '@/lib/actions';
-import { Loader2, AlertTriangle, FileVideo, CheckCircle } from 'lucide-react';
+import { Loader2, AlertTriangle, FileVideo, CheckCircle, Video } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import { Progress } from '@/components/ui/progress';
 
 type AnalysisDialogProps = {
   open: boolean;
@@ -50,9 +51,11 @@ function SubmitButton() {
 export function AnalysisDialog({ open, onOpenChange, location, feedId }: AnalysisDialogProps) {
   const { toast } = useToast();
   const [state, formAction] = useActionState(handleAnalyzeBehavior, initialState);
-  const [videoDataUri, setVideoDataUri] = useState('');
+  const [frames, setFrames] = useState<string[]>([]);
   const [videoFileName, setVideoFileName] = useState('');
+  const [progress, setProgress] = useState(0);
   const formRef = useRef<HTMLFormElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -60,20 +63,98 @@ export function AnalysisDialog({ open, onOpenChange, location, feedId }: Analysi
       setVideoFileName(file.name);
       const reader = new FileReader();
       reader.onload = (loadEvent) => {
-        setVideoDataUri(loadEvent.target?.result as string);
+        if (videoRef.current) {
+          videoRef.current.src = loadEvent.target?.result as string;
+        }
       };
       reader.readAsDataURL(file);
     }
   };
+
+  const captureFrames = () => {
+    if (!videoRef.current) return;
+    const video = videoRef.current;
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    const capturedFrames: string[] = [];
+    const frameCount = 5;
+    const duration = video.duration;
+
+    if (!context || isNaN(duration) || duration === 0) {
+       toast({
+        variant: 'destructive',
+        title: 'Video Hatası',
+        description: 'Video yüklenemedi veya süresi sıfır. Lütfen farklı bir dosya deneyin.',
+      });
+      setProgress(0);
+      return;
+    }
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    let framesCaptured = 0;
+
+    const captureFrame = () => {
+        if (framesCaptured >= frameCount) {
+            setFrames(capturedFrames);
+            setProgress(100);
+            return;
+        }
+
+        const time = (duration / (frameCount + 1)) * (framesCaptured + 1);
+        video.currentTime = time;
+    };
+
+    video.onseeked = () => {
+        if (framesCaptured >= frameCount || !context) return;
+        
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const dataUri = canvas.toDataURL('image/jpeg');
+        capturedFrames.push(dataUri);
+        framesCaptured++;
+        
+        const newProgress = (framesCaptured / frameCount) * 100;
+        setProgress(newProgress);
+        
+        captureFrame();
+    }
+    
+    video.onloadeddata = () => {
+        captureFrame();
+    };
+
+    if (video.readyState >= 2) { // HAVE_CURRENT_DATA
+        captureFrame();
+    }
+  }
   
   const handleOpenChange = (isOpen: boolean) => {
     if (!isOpen) {
       formRef.current?.reset();
-      setVideoDataUri('');
+      setFrames([]);
       setVideoFileName('');
+      setProgress(0);
+      if(videoRef.current) videoRef.current.src = "";
     }
     onOpenChange(isOpen);
   };
+  
+  const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (frames.length === 0) {
+      toast({
+        variant: 'destructive',
+        title: 'Kareler eksik',
+        description: 'Lütfen analizden önce videodan kareleri yakalayın.',
+      });
+      return;
+    }
+    const formData = new FormData(event.currentTarget);
+    frames.forEach((frame, index) => {
+      formData.append(`frames[${index}]`, frame);
+    });
+    formAction(formData);
+  }
 
   useEffect(() => {
     if (state.error) {
@@ -98,7 +179,7 @@ export function AnalysisDialog({ open, onOpenChange, location, feedId }: Analysi
         <DialogHeader>
           <DialogTitle className="font-headline">Davranış Analizi: {location}</DialogTitle>
           <DialogDescription>
-            Anormallikleri tespit etmek için bir video klip yükleyin ve beklenen normal davranışları tanımlayın.
+            Anormallikleri tespit etmek için bir video klip yükleyin, kareleri yakalayın ve beklenen normal davranışları tanımlayın.
           </DialogDescription>
         </DialogHeader>
 
@@ -122,8 +203,7 @@ export function AnalysisDialog({ open, onOpenChange, location, feedId }: Analysi
             </DialogFooter>
           </div>
         ) : (
-          <form action={formAction} ref={formRef} className="space-y-4">
-            <input type="hidden" name="videoDataUri" value={videoDataUri} />
+          <form onSubmit={handleFormSubmit} ref={formRef} className="space-y-4">
             <input type="hidden" name="feedId" value={feedId} />
             
             <div className="space-y-2">
@@ -136,6 +216,19 @@ export function AnalysisDialog({ open, onOpenChange, location, feedId }: Analysi
                 </div>
               )}
             </div>
+
+            {videoFileName && (
+              <div className="space-y-3">
+                 <video ref={videoRef} className="w-full rounded-md bg-black" controls muted />
+                 <Button type="button" variant="secondary" onClick={captureFrames} disabled={progress > 0 && progress < 100}>
+                   <Video className="mr-2"/>
+                   Kareleri Yakala
+                 </Button>
+                 {progress > 0 && <Progress value={progress} className="w-full" />}
+                 {frames.length > 0 && <p className="text-sm text-success">{frames.length} kare başarıyla yakalandı.</p>}
+              </div>
+            )}
+
 
             <div className="space-y-2">
               <Label htmlFor="behavior-description">Beklenen Davranış</Label>
@@ -156,7 +249,7 @@ export function AnalysisDialog({ open, onOpenChange, location, feedId }: Analysi
             )}
 
             <DialogFooter>
-                <Button variant="ghost" onClick={() => handleOpenChange(false)}>İptal</Button>
+                <Button variant="ghost" type="button" onClick={() => handleOpenChange(false)}>İptal</Button>
                 <SubmitButton />
             </DialogFooter>
           </form>
