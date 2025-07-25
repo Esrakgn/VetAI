@@ -1,7 +1,7 @@
 'use client';
 
 import { useFormStatus } from 'react-dom';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useActionState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -18,7 +18,6 @@ import { handleAnalyzeBehavior } from '@/lib/actions';
 import { Loader2, AlertTriangle, FileVideo, CheckCircle, Video } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { Progress } from '@/components/ui/progress';
-import { useActionState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 type AnalysisDialogProps = {
