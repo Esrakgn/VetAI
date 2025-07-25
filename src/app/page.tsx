@@ -24,29 +24,29 @@ import { Logo } from '@/components/logo';
 const initialAlerts: Alert[] = [
   {
     id: 1,
-    animalId: 'İnek #842',
+    animalId: 'Hayvan #842',
     description: 'Uzun süreli hareketsizlik tespit edildi.',
     timestamp: '5 dakika önce',
     severity: 'Yüksek',
   },
   {
     id: 2,
-    animalId: 'Koyun #109',
-    description: 'Sürüden ayrıldı.',
+    animalId: 'Hayvan #109',
+    description: 'Grupdan ayrıldı.',
     timestamp: '2 saat önce',
     severity: 'Orta',
   },
   {
     id: 3,
-    animalId: 'İnek #331',
-    description: '2. beslemede topallama gözlendi.',
+    animalId: 'Hayvan #331',
+    description: 'Beslenme zamanı topallama gözlendi.',
     timestamp: '8 saat önce',
     severity: 'Yüksek',
   },
   {
     id: 4,
     animalId: 'Genel',
-    description: 'A Merasında sürü hareketliliğinde azalma.',
+    description: 'A Bölgesinde grup hareketliliğinde azalma.',
     timestamp: '1 gün önce',
     severity: 'Düşük',
   },
@@ -59,7 +59,7 @@ export default function Home() {
   const addAlert = (location: string, anomaly: string) => {
     const newAlert: Alert = {
       id: alerts.length + 1,
-      animalId: `Ahır: ${location}`,
+      animalId: `Konum: ${location}`,
       description: anomaly,
       timestamp: 'Şimdi',
       severity: 'Yüksek'
@@ -109,7 +109,7 @@ export default function Home() {
             <div className="container mx-auto">
               <div className="mb-8">
                 <h1 className="text-3xl font-headline font-bold text-foreground">Kontrol Paneli</h1>
-                <p className="text-muted-foreground">Tekrar hoş geldiniz, işte sürünüzün genel durumu.</p>
+                <p className="text-muted-foreground">Tekrar hoş geldiniz, işte hayvanlarınızın genel durumu.</p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                 <StatCard title="Toplam Hayvan" value="1,250" icon={<Users className="h-8 w-8 text-primary" />} description="Geçen aydan beri +12" />

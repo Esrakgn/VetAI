@@ -247,7 +247,7 @@ export function AnalysisDialog({ open, onOpenChange, location, feedId, onAnalyze
               <Textarea
                 id="behavior-description"
                 name="behaviorDescription"
-                placeholder="Örn: Hayvanlar aktif olarak otluyor, merada hareket ediyor ve sürüden ayrılma veya rahatsızlık belirtisi göstermiyor."
+                placeholder="Örn: Hayvanlar aktif olarak hareket ediyor, grupla etkileşimde bulunuyor ve stres belirtisi göstermiyor."
                 required
                 rows={4}
               />

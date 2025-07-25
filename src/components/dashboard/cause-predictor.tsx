@@ -63,8 +63,8 @@ export function CausePredictor() {
       <CardContent>
         <form action={formAction} ref={formRef} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="animalId">Hayvan ID</Label>
-            <Input id="animalId" name="animalId" placeholder="Örn: İnek #842" required />
+            <Label htmlFor="animalId">Hayvan/Grup ID</Label>
+            <Input id="animalId" name="animalId" placeholder="Örn: Hayvan #842 veya Grup A" required />
           </div>
           <div className="space-y-2">
             <Label htmlFor="observedBehavior">Gözlemlenen Davranış</Label>

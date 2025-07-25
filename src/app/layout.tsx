@@ -5,7 +5,7 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: 'VetAI',
-  description: 'Yapay zeka destekli veteriner analizi',
+  description: 'Yapay zeka destekli hayvan davranışı analizi',
 };
 
 export default function RootLayout({

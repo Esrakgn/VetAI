@@ -26,7 +26,7 @@ export function RecentAlerts({ alerts }: RecentAlertsProps) {
     <Card>
       <CardHeader>
         <CardTitle className="font-headline">Son Anormallik Alarmları</CardTitle>
-        <CardDescription>Sürünüzden gelen kritik uyarılar.</CardDescription>
+        <CardDescription>Hayvanlarınızdan gelen kritik uyarılar.</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">

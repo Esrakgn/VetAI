@@ -3,28 +3,28 @@ import { VideoFeedCard } from './video-feed-card';
 
 const cameraFeeds = [
   {
-    id: 'barn-1',
-    location: 'Ana Ahır - Bölüm 1',
+    id: 'facility-1',
+    location: 'Tesis 1 - Bölüm A',
     imageUrl: 'https://placehold.co/600x400',
-    aiHint: 'cow barn',
+    aiHint: 'animal shelter',
   },
   {
-    id: 'pasture-a',
-    location: 'Mera A',
+    id: 'field-a',
+    location: 'Açık Alan A',
     imageUrl: 'https://placehold.co/600x400',
-    aiHint: 'cow pasture',
+    aiHint: 'sheep pasture',
   },
   {
-    id: 'barn-2',
-    location: 'Doğum Ahırı',
+    id: 'nursery-1',
+    location: 'Bakım Odası',
     imageUrl: 'https://placehold.co/600x400',
-    aiHint: 'calves barn',
+    aiHint: 'puppies shelter',
   },
   {
-    id: 'field-b',
-    location: 'Batı Tarlası',
+    id: 'common-area',
+    location: 'Ortak Alan',
     imageUrl: 'https://placehold.co/600x400',
-    aiHint: 'cows field',
+    aiHint: 'cats shelter',
   },
 ];
 
@@ -37,7 +37,7 @@ export function VideoFeeds({ onAnalyze }: VideoFeedsProps) {
     <Card className="h-full">
       <CardHeader>
         <CardTitle className="font-headline">Canlı Kamera Akışları</CardTitle>
-        <CardDescription>Sürünüzü gerçek zamanlı olarak izleyin ve davranışları analiz edin.</CardDescription>
+        <CardDescription>Hayvanlarınızı gerçek zamanlı olarak izleyin ve davranışları analiz edin.</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
