@@ -1,7 +1,7 @@
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
-import { useEffect, useState, useRef } from 'react';
+import { useFormStatus } from 'react-dom';
+import { useEffect, useState, useRef, useActionState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -48,7 +48,7 @@ function SubmitButton() {
 }
 
 export function AnalysisDialog({ open, onOpenChange, location, feedId }: AnalysisDialogProps) {
-  const [state, formAction] = useFormState(handleAnalyzeBehavior, initialState);
+  const [state, formAction] = useActionState(handleAnalyzeBehavior, initialState);
   const [videoDataUri, setVideoDataUri] = useState('');
   const [videoFileName, setVideoFileName] = useState('');
   const formRef = useRef<HTMLFormElement>(null);
@@ -70,7 +70,7 @@ export function AnalysisDialog({ open, onOpenChange, location, feedId }: Analysi
       formRef.current?.reset();
       setVideoDataUri('');
       setVideoFileName('');
-      // Reset state if needed, but useFormState should handle this on new invocation
+      // Reset state if needed, but useActionState should handle this on new invocation
     }
     onOpenChange(isOpen);
   };

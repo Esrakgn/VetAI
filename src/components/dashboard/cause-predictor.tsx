@@ -1,7 +1,7 @@
 "use client"
 
-import { useFormState, useFormStatus } from 'react-dom';
-import { useEffect, useRef } from 'react';
+import { useFormStatus } from 'react-dom';
+import { useEffect, useRef, useActionState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,7 +34,7 @@ function PredictButton() {
 
 
 export function CausePredictor() {
-  const [state, formAction] = useFormState(handlePredictCause, initialState);
+  const [state, formAction] = useActionState(handlePredictCause, initialState);
   const formRef = useRef<HTMLFormElement>(null);
   
   useEffect(() => {
