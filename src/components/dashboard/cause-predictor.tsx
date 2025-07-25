@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { handlePredictCause } from '@/lib/actions';
 import { Loader2, AlertTriangle, Lightbulb } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 
 const initialState = {
   probableCauses: null,
@@ -34,6 +34,7 @@ function PredictButton() {
 
 
 export function CausePredictor() {
+  const { toast } = useToast();
   const [state, formAction] = useActionState(handlePredictCause, initialState);
   const formRef = useRef<HTMLFormElement>(null);
   
@@ -51,7 +52,7 @@ export function CausePredictor() {
       });
       formRef.current?.reset();
     }
-  }, [state]);
+  }, [state, toast]);
 
   return (
     <Card>
