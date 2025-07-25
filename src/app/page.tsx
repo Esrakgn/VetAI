@@ -56,7 +56,13 @@ const initialAlerts: Alert[] = [
 
 export default function Home() {
   const [alerts, setAlerts] = useState<Alert[]>(initialAlerts);
-  const [activeTab, setActiveTab] = useState('alerts');
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeMenu, setActiveMenu] = useState('dashboard');
+
+  const handleMenuClick = (menu: string, tab: string) => {
+    setActiveMenu(menu);
+    setActiveTab(tab);
+  };
 
   const addAlert = (location: string, anomaly: string) => {
     const newAlert: Alert = {
@@ -67,8 +73,19 @@ export default function Home() {
       severity: 'Yüksek'
     };
     setAlerts(prevAlerts => [newAlert, ...prevAlerts]);
-    setActiveTab('alerts');
+    handleMenuClick('dashboard', 'alerts');
   };
+  
+  const getTabForMenu = (menu: string) => {
+    switch (menu) {
+      case 'dashboard':
+        return 'alerts';
+      case 'diagnosis':
+        return 'diagnosis';
+      default:
+        return 'alerts';
+    }
+  }
 
   return (
     <SidebarProvider>
@@ -79,31 +96,46 @@ export default function Home() {
         <SidebarContent>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton isActive>
+              <SidebarMenuButton
+                isActive={activeMenu === 'dashboard'}
+                onClick={() => handleMenuClick('dashboard', getTabForMenu('dashboard'))}
+              >
                 <LayoutDashboard />
                 Kontrol Paneli
               </SidebarMenuButton>
             </SidebarMenuItem>
              <SidebarMenuItem>
-              <SidebarMenuButton onClick={() => setActiveTab('diagnosis')}>
+              <SidebarMenuButton
+                isActive={activeMenu === 'diagnosis'}
+                onClick={() => handleMenuClick('diagnosis', 'diagnosis')}
+              >
                 <Stethoscope />
                 Hastalık Teşhisi
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton>
+              <SidebarMenuButton
+                isActive={activeMenu === 'analysis'}
+                onClick={() => handleMenuClick('analysis', 'analysis')}
+              >
                 <AreaChart />
                 Analiz
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton>
+              <SidebarMenuButton
+                isActive={activeMenu === 'history'}
+                onClick={() => handleMenuClick('history', 'history')}
+              >
                 <History />
                 Geçmiş Kayıtlar
               </SidebarMenuButton>
             </SidebarMenuItem>
              <SidebarMenuItem>
-              <SidebarMenuButton>
+              <SidebarMenuButton
+                isActive={activeMenu === 'settings'}
+                onClick={() => handleMenuClick('settings', 'settings')}
+              >
                 <Settings />
                 Ayarlar
               </SidebarMenuButton>
@@ -146,6 +178,10 @@ export default function Home() {
                     <TabsContent value="diagnosis" className="mt-4">
                       <DiseaseDiagnosis />
                     </TabsContent>
+                    {/* Dummy content for other tabs to prevent warnings */}
+                    <TabsContent value="analysis"></TabsContent>
+                    <TabsContent value="history"></TabsContent>
+                    <TabsContent value="settings"></TabsContent>
                   </Tabs>
                 </div>
               </div>
