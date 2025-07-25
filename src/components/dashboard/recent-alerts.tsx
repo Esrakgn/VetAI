@@ -3,36 +3,13 @@ import { Button } from '@/components/ui/button';
 import { AlertCircle, Clock4, ArrowRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
-const alerts = [
-  {
-    id: 1,
-    animalId: 'İnek #842',
-    description: 'Uzun süreli hareketsizlik tespit edildi.',
-    timestamp: '5 dakika önce',
-    severity: 'Yüksek',
-  },
-  {
-    id: 2,
-    animalId: 'Koyun #109',
-    description: 'Sürüden ayrıldı.',
-    timestamp: '2 saat önce',
-    severity: 'Orta',
-  },
-  {
-    id: 3,
-    animalId: 'İnek #331',
-    description: '2. beslemede topallama gözlendi.',
-    timestamp: '8 saat önce',
-    severity: 'Yüksek',
-  },
-  {
-    id: 4,
-    animalId: 'Genel',
-    description: 'A Merasında sürü hareketliliğinde azalma.',
-    timestamp: '1 gün önce',
-    severity: 'Düşük',
-  },
-];
+export type Alert = {
+  id: number;
+  animalId: string;
+  description: string;
+  timestamp: string;
+  severity: 'Yüksek' | 'Orta' | 'Düşük';
+};
 
 const severityMap = {
   'Yüksek': 'destructive',
@@ -40,8 +17,11 @@ const severityMap = {
   'Düşük': 'outline',
 } as const;
 
+type RecentAlertsProps = {
+  alerts: Alert[];
+};
 
-export function RecentAlerts() {
+export function RecentAlerts({ alerts }: RecentAlertsProps) {
   return (
     <Card>
       <CardHeader>
@@ -58,7 +38,7 @@ export function RecentAlerts() {
               <div className="flex-1">
                 <div className="flex justify-between items-center">
                   <p className="text-sm font-semibold text-foreground">{alert.animalId}</p>
-                  <Badge variant={severityMap[alert.severity as keyof typeof severityMap] || 'default'}>
+                  <Badge variant={severityMap[alert.severity] || 'default'}>
                     {alert.severity}
                   </Badge>
                 </div>

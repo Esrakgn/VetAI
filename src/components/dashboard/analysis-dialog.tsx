@@ -26,6 +26,7 @@ type AnalysisDialogProps = {
   onOpenChange: (open: boolean) => void;
   location: string;
   feedId: string;
+  onAnalyze: (location: string, anomaly: string) => void;
 };
 
 const initialState = {
@@ -50,7 +51,7 @@ function SubmitButton({ framesCaptured }: { framesCaptured: boolean }) {
   );
 }
 
-export function AnalysisDialog({ open, onOpenChange, location, feedId }: AnalysisDialogProps) {
+export function AnalysisDialog({ open, onOpenChange, location, feedId, onAnalyze }: AnalysisDialogProps) {
   const { toast } = useToast();
   const [state, formAction] = useActionState(handleAnalyzeBehavior, initialState);
   const [frames, setFrames] = useState<string[]>([]);
@@ -165,6 +166,9 @@ export function AnalysisDialog({ open, onOpenChange, location, feedId }: Analysi
         description: state.error,
       });
     } else if (state.anomalies && state.anomalies.length > 0) {
+      state.anomalies.forEach((anomaly) => {
+        onAnalyze(location, anomaly);
+      });
       toast({
         variant: 'destructive',
         title: 'Uyarı: Anormallik Tespit Edildi',
@@ -178,7 +182,7 @@ export function AnalysisDialog({ open, onOpenChange, location, feedId }: Analysi
         description: `Anormal bir davranış tespit edilmedi.`,
       });
     }
-  }, [state, toast]);
+  }, [state, toast, location, onAnalyze]);
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>

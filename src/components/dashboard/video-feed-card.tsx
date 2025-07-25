@@ -11,9 +11,10 @@ type VideoFeedCardProps = {
   location: string;
   imageUrl: string;
   aiHint: string;
+  onAnalyze: (location: string, anomaly: string) => void;
 };
 
-export function VideoFeedCard({ id, location, imageUrl, aiHint }: VideoFeedCardProps) {
+export function VideoFeedCard({ id, location, imageUrl, aiHint, onAnalyze }: VideoFeedCardProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   return (
@@ -41,6 +42,7 @@ export function VideoFeedCard({ id, location, imageUrl, aiHint }: VideoFeedCardP
         onOpenChange={setIsDialogOpen}
         location={location}
         feedId={id}
+        onAnalyze={onAnalyze}
       />
     </>
   );

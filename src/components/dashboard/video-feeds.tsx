@@ -28,7 +28,11 @@ const cameraFeeds = [
   },
 ];
 
-export function VideoFeeds() {
+type VideoFeedsProps = {
+  onAnalyze: (location: string, anomaly: string) => void;
+};
+
+export function VideoFeeds({ onAnalyze }: VideoFeedsProps) {
   return (
     <Card className="h-full">
       <CardHeader>
@@ -38,7 +42,7 @@ export function VideoFeeds() {
       <CardContent>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {cameraFeeds.map(feed => (
-            <VideoFeedCard key={feed.id} {...feed} />
+            <VideoFeedCard key={feed.id} {...feed} onAnalyze={onAnalyze} />
           ))}
         </div>
       </CardContent>
