@@ -7,7 +7,8 @@ import { StatCard } from '@/components/dashboard/stat-card';
 import { VideoFeeds } from '@/components/dashboard/video-feeds';
 import { RecentAlerts, type Alert } from '@/components/dashboard/recent-alerts';
 import { CausePredictor } from '@/components/dashboard/cause-predictor';
-import { Users, AlertTriangle, ShieldCheck, LayoutDashboard, AreaChart, History, Settings } from 'lucide-react';
+import { DiseaseDiagnosis } from '@/components/dashboard/disease-diagnosis';
+import { Users, AlertTriangle, ShieldCheck, LayoutDashboard, AreaChart, History, Settings, Stethoscope } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   SidebarProvider,
@@ -123,15 +124,19 @@ export default function Home() {
                 </div>
                 <div className="space-y-8">
                   <Tabs defaultValue="alerts" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2">
+                    <TabsList className="grid w-full grid-cols-3">
                       <TabsTrigger value="alerts">Son Alarmlar</TabsTrigger>
                       <TabsTrigger value="predictor">Neden Tahmini</TabsTrigger>
+                      <TabsTrigger value="diagnosis">Hastalık Teşhisi</TabsTrigger>
                     </TabsList>
                     <TabsContent value="alerts" className="mt-4">
                       <RecentAlerts alerts={alerts} />
                     </TabsContent>
                     <TabsContent value="predictor" className="mt-4">
                       <CausePredictor />
+                    </TabsContent>
+                    <TabsContent value="diagnosis" className="mt-4">
+                      <DiseaseDiagnosis />
                     </TabsContent>
                   </Tabs>
                 </div>

@@ -3,6 +3,7 @@
 import { z } from 'zod';
 import { analyzeBehavior } from '@/ai/flows/analyze-behavior';
 import { predictAnomalyCause } from '@/ai/flows/predict-anomaly-cause';
+import { diagnoseDisease } from '@/ai/flows/diagnose-disease';
 
 // Schema for analyzeBehavior form
 const AnalyzeSchema = z.object({
@@ -91,6 +92,53 @@ export async function handlePredictCause(prevState: PredictState, formData: Form
         return {
             probableCauses: null,
             error: e.message || 'Tahmin sırasında bilinmeyen bir hata oluştu.',
+        };
+    }
+}
+
+// Schema for diagnoseDisease form
+const DiagnoseSchema = z.object({
+    photoDataUri: z.string().min(1, 'Fotoğraf gerekli.'),
+    description: z.string().min(10, 'Semptom açıklaması çok kısa.'),
+});
+
+type DiagnoseState = {
+    isDisease: boolean | null;
+    disease: string | null;
+    confidence: string | null;
+    recommendation: string | null;
+    error: string | null;
+}
+
+export async function handleDiagnoseDisease(prevState: DiagnoseState, formData: FormData): Promise<DiagnoseState> {
+    const validatedFields = DiagnoseSchema.safeParse({
+        photoDataUri: formData.get('photoDataUri'),
+        description: formData.get('description'),
+    });
+
+    if (!validatedFields.success) {
+        return {
+            isDisease: null,
+            disease: null,
+            confidence: null,
+            recommendation: null,
+            error: validatedFields.error.flatten().fieldErrors.photoDataUri?.[0] || validatedFields.error.flatten().fieldErrors.description?.[0] || 'Geçersiz girdi.',
+        };
+    }
+
+    try {
+        const result = await diagnoseDisease(validatedFields.data);
+        return {
+            ...result,
+            error: null,
+        };
+    } catch (e: any) {
+        return {
+            isDisease: null,
+            disease: null,
+            confidence: null,
+            recommendation: null,
+            error: e.message || 'Teşhis sırasında bilinmeyen bir hata oluştu.',
         };
     }
 }
