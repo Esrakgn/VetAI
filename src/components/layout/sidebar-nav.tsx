@@ -27,7 +27,7 @@ export function SidebarNav() {
         <SidebarMenu>
           {menuItems.map((item) => (
             <SidebarMenuItem key={item.path}>
-              <Link href={item.path} legacyBehavior passHref>
+              <Link href={item.path}>
                 <SidebarMenuButton isActive={pathname.startsWith(item.path)}>
                   <item.icon />
                   {item.label}
