@@ -6,40 +6,47 @@ import { Badge } from '@/components/ui/badge';
 const alerts = [
   {
     id: 1,
-    animalId: 'Cow #842',
-    description: 'Prolonged inactivity detected.',
-    timestamp: '5 mins ago',
-    severity: 'High',
+    animalId: 'İnek #842',
+    description: 'Uzun süreli hareketsizlik tespit edildi.',
+    timestamp: '5 dakika önce',
+    severity: 'Yüksek',
   },
   {
     id: 2,
-    animalId: 'Sheep #109',
-    description: 'Separated from herd.',
-    timestamp: '2 hours ago',
-    severity: 'Medium',
+    animalId: 'Koyun #109',
+    description: 'Sürüden ayrıldı.',
+    timestamp: '2 saat önce',
+    severity: 'Orta',
   },
   {
     id: 3,
-    animalId: 'Cow #331',
-    description: 'Limping observed on feed 2.',
-    timestamp: '8 hours ago',
-    severity: 'High',
+    animalId: 'İnek #331',
+    description: '2. beslemede topallama gözlendi.',
+    timestamp: '8 saat önce',
+    severity: 'Yüksek',
   },
   {
     id: 4,
-    animalId: 'General',
-    description: 'Reduced herd movement in Pasture A.',
-    timestamp: '1 day ago',
-    severity: 'Low',
+    animalId: 'Genel',
+    description: 'A Merasında sürü hareketliliğinde azalma.',
+    timestamp: '1 gün önce',
+    severity: 'Düşük',
   },
 ];
+
+const severityMap = {
+  'Yüksek': 'destructive',
+  'Orta': 'secondary',
+  'Düşük': 'outline',
+} as const;
+
 
 export function RecentAlerts() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-headline">Recent Anomaly Alerts</CardTitle>
-        <CardDescription>Critical warnings from your herd.</CardDescription>
+        <CardTitle className="font-headline">Son Anormallik Alarmları</CardTitle>
+        <CardDescription>Sürünüzden gelen kritik uyarılar.</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
@@ -51,7 +58,7 @@ export function RecentAlerts() {
               <div className="flex-1">
                 <div className="flex justify-between items-center">
                   <p className="text-sm font-semibold text-foreground">{alert.animalId}</p>
-                  <Badge variant={alert.severity === 'High' ? 'destructive' : alert.severity === 'Medium' ? 'secondary' : 'outline'}>
+                  <Badge variant={severityMap[alert.severity as keyof typeof severityMap] || 'default'}>
                     {alert.severity}
                   </Badge>
                 </div>
@@ -67,7 +74,7 @@ export function RecentAlerts() {
       </CardContent>
       <CardFooter>
         <Button variant="outline" className="w-full">
-          View All Alerts
+          Tüm Alarmları Görüntüle
           <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
       </CardFooter>

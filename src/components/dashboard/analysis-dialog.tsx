@@ -1,8 +1,7 @@
 'use client';
 
 import { useFormStatus } from 'react-dom';
-import { useEffect, useState, useRef } from 'react';
-import { useActionState } from 'react';
+import { useEffect, useState, useRef, useActionState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -39,10 +38,10 @@ function SubmitButton() {
       {pending ? (
         <>
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Analyzing...
+          Analiz Ediliyor...
         </>
       ) : (
-        'Start Analysis'
+        'Analizi Başlat'
       )}
     </Button>
   );
@@ -72,7 +71,6 @@ export function AnalysisDialog({ open, onOpenChange, location, feedId }: Analysi
       formRef.current?.reset();
       setVideoDataUri('');
       setVideoFileName('');
-      // Reset state if needed, but useActionState should handle this on new invocation
     }
     onOpenChange(isOpen);
   };
@@ -81,15 +79,15 @@ export function AnalysisDialog({ open, onOpenChange, location, feedId }: Analysi
     if (state.error) {
       toast({
         variant: 'destructive',
-        title: 'Analysis Failed',
+        title: 'Analiz Başarısız',
         description: state.error,
       });
     } else if (state.anomalies) {
        toast({
         variant: 'default',
         className: "bg-success text-success-foreground",
-        title: 'Analysis Complete',
-        description: `Found ${state.anomalies.length} anomalies.`,
+        title: 'Analiz Tamamlandı',
+        description: `${state.anomalies.length} anormallik bulundu.`,
       });
     }
   }, [state, toast]);
@@ -98,29 +96,29 @@ export function AnalysisDialog({ open, onOpenChange, location, feedId }: Analysi
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[625px]">
         <DialogHeader>
-          <DialogTitle className="font-headline">Analyze Behavior: {location}</DialogTitle>
+          <DialogTitle className="font-headline">Davranış Analizi: {location}</DialogTitle>
           <DialogDescription>
-            Upload a video clip and describe the expected normal behavior to detect anomalies.
+            Anormallikleri tespit etmek için bir video klip yükleyin ve beklenen normal davranışları tanımlayın.
           </DialogDescription>
         </DialogHeader>
 
         {state.anomalies ? (
           <div className="py-4 space-y-4">
-            <h3 className="text-lg font-semibold flex items-center text-primary"><CheckCircle className="mr-2 h-5 w-5" />Analysis Complete</h3>
+            <h3 className="text-lg font-semibold flex items-center text-primary"><CheckCircle className="mr-2 h-5 w-5" />Analiz Tamamlandı</h3>
             <div>
-              <h4 className="font-semibold text-foreground">Detected Anomalies</h4>
+              <h4 className="font-semibold text-foreground">Tespit Edilen Anormallikler</h4>
               {state.anomalies.length > 0 ? (
                 <ul className="list-disc list-inside mt-2 text-sm text-muted-foreground bg-secondary p-3 rounded-md">
                   {state.anomalies.map((anomaly, index) => <li key={index}>{anomaly}</li>)}
                 </ul>
-              ) : <p className="text-sm text-muted-foreground mt-1">No anomalies detected.</p>}
+              ) : <p className="text-sm text-muted-foreground mt-1">Anormallik tespit edilmedi.</p>}
             </div>
              <div>
-              <h4 className="font-semibold text-foreground">Probable Causes</h4>
+              <h4 className="font-semibold text-foreground">Olası Nedenler</h4>
               <p className="text-sm text-muted-foreground mt-1 bg-secondary p-3 rounded-md">{state.causePrediction}</p>
             </div>
             <DialogFooter>
-                <Button onClick={() => handleOpenChange(false)}>Close</Button>
+                <Button onClick={() => handleOpenChange(false)}>Kapat</Button>
             </DialogFooter>
           </div>
         ) : (
@@ -129,7 +127,7 @@ export function AnalysisDialog({ open, onOpenChange, location, feedId }: Analysi
             <input type="hidden" name="feedId" value={feedId} />
             
             <div className="space-y-2">
-              <Label htmlFor="video-upload">Video Clip</Label>
+              <Label htmlFor="video-upload">Video Klip</Label>
               <Input id="video-upload" type="file" accept="video/*" onChange={handleFileChange} required />
                {videoFileName && (
                 <div className="text-xs text-muted-foreground flex items-center gap-2 pt-1">
@@ -140,11 +138,11 @@ export function AnalysisDialog({ open, onOpenChange, location, feedId }: Analysi
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="behavior-description">Expected Behavior</Label>
+              <Label htmlFor="behavior-description">Beklenen Davranış</Label>
               <Textarea
                 id="behavior-description"
                 name="behaviorDescription"
-                placeholder="e.g., Animals are actively grazing, moving around the pasture, with no signs of distress or separation from the herd."
+                placeholder="Örn: Hayvanlar aktif olarak otluyor, merada hareket ediyor ve sürüden ayrılma veya rahatsızlık belirtisi göstermiyor."
                 required
                 rows={4}
               />
@@ -158,7 +156,7 @@ export function AnalysisDialog({ open, onOpenChange, location, feedId }: Analysi
             )}
 
             <DialogFooter>
-                <Button variant="ghost" onClick={() => handleOpenChange(false)}>Cancel</Button>
+                <Button variant="ghost" onClick={() => handleOpenChange(false)}>İptal</Button>
                 <SubmitButton />
             </DialogFooter>
           </form>

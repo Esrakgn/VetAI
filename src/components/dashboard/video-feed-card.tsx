@@ -32,7 +32,7 @@ export function VideoFeedCard({ id, location, imageUrl, aiHint }: VideoFeedCardP
           <p className="text-sm font-semibold text-primary-foreground">{location}</p>
           <Button size="sm" onClick={() => setIsDialogOpen(true)} className="bg-accent text-accent-foreground hover:bg-accent/90">
             <Bot className="mr-2 h-4 w-4" />
-            Analyze
+            Analiz Et
           </Button>
         </div>
       </div>

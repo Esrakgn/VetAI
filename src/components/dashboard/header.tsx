@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Bell, Settings, LifeBuoy, LogOut, User as UserIcon } from 'lucide-react';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 export function Header() {
   return (
@@ -18,11 +19,9 @@ export function Header() {
         <div className="flex items-center justify-between h-16">
           <Logo />
           <div className="flex items-center gap-2 sm:gap-4">
+            <ThemeToggle />
             <Button variant="ghost" size="icon" aria-label="Notifications">
               <Bell className="h-5 w-5" />
-            </Button>
-            <Button variant="ghost" size="icon" aria-label="Settings">
-              <Settings className="h-5 w-5" />
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -32,24 +31,24 @@ export function Header() {
                 </Avatar>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuLabel>Hesabım</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
                   <UserIcon className="mr-2 h-4 w-4" />
-                  <span>Profile</span>
+                  <span>Profil</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <Settings className="mr-2 h-4 w-4" />
-                  <span>Settings</span>
+                  <span>Ayarlar</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <LifeBuoy className="mr-2 h-4 w-4" />
-                  <span>Support</span>
+                  <span>Destek</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
                   <LogOut className="mr-2 h-4 w-4" />
-                  <span>Log out</span>
+                  <span>Çıkış Yap</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

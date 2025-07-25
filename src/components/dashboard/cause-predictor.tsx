@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { handlePredictCause } from '@/lib/actions';
 import { Loader2, AlertTriangle, Lightbulb } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 const initialState = {
   probableCauses: null,
@@ -23,10 +23,10 @@ function PredictButton() {
       {pending ? (
         <>
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Predicting...
+          Tahmin Ediliyor...
         </>
       ) : (
-        'Predict Causes'
+        'Nedenleri Tahmin Et'
       )}
     </Button>
   );
@@ -41,13 +41,13 @@ export function CausePredictor() {
     if (state.error) {
       toast({
         variant: 'destructive',
-        title: 'Prediction Failed',
+        title: 'Tahmin Başarısız',
         description: state.error,
       });
     } else if (state.probableCauses) {
       toast({
-        title: 'Prediction Ready',
-        description: `Generated potential causes for the observed behavior.`,
+        title: 'Tahmin Hazır',
+        description: `Gözlemlenen davranış için potansiyel nedenler oluşturuldu.`,
       });
       formRef.current?.reset();
     }
@@ -56,22 +56,22 @@ export function CausePredictor() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-headline">Predict Anomaly Cause</CardTitle>
-        <CardDescription>Use AI to predict causes for a specific behavior.</CardDescription>
+        <CardTitle className="font-headline">Anormallik Nedenini Tahmin Et</CardTitle>
+        <CardDescription>Belirli bir davranışın nedenlerini tahmin etmek için yapay zekayı kullanın.</CardDescription>
       </CardHeader>
       <CardContent>
         <form action={formAction} ref={formRef} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="animalId">Animal ID</Label>
-            <Input id="animalId" name="animalId" placeholder="e.g., Cow #842" required />
+            <Label htmlFor="animalId">Hayvan ID</Label>
+            <Input id="animalId" name="animalId" placeholder="Örn: İnek #842" required />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="observedBehavior">Observed Behavior</Label>
-            <Textarea id="observedBehavior" name="observedBehavior" placeholder="e.g., Lying down for 3+ hours, not eating." required />
+            <Label htmlFor="observedBehavior">Gözlemlenen Davranış</Label>
+            <Textarea id="observedBehavior" name="observedBehavior" placeholder="Örn: 3+ saattir yatıyor, yemek yemiyor." required />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="historicalData">Historical Data (Optional)</Label>
-            <Textarea id="historicalData" name="historicalData" placeholder="e.g., Had a mild fever last week. No prior issues." />
+            <Label htmlFor="historicalData">Geçmiş Veriler (İsteğe Bağlı)</Label>
+            <Textarea id="historicalData" name="historicalData" placeholder="Örn: Geçen hafta hafif ateşi vardı. Önceden sorunu yoktu." />
           </div>
 
           {state.error && (
@@ -86,7 +86,7 @@ export function CausePredictor() {
 
         {state.probableCauses && (
           <div className="mt-6">
-            <h4 className="font-semibold flex items-center mb-2"><Lightbulb className="h-5 w-5 mr-2 text-primary" />AI Prediction Results</h4>
+            <h4 className="font-semibold flex items-center mb-2"><Lightbulb className="h-5 w-5 mr-2 text-primary" />Yapay Zeka Tahmin Sonuçları</h4>
             <div className="bg-secondary p-3 rounded-md text-sm text-secondary-foreground space-y-2">
                {state.probableCauses.map((cause, index) => (
                 <p key={index}><span className="font-bold">{index + 1}.</span> {cause}</p>
