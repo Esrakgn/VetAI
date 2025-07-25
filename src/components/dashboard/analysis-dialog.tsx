@@ -1,7 +1,7 @@
 'use client';
 
 import { useFormStatus } from 'react-dom';
-import { useEffect, useState, useRef, useActionState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -18,6 +18,8 @@ import { handleAnalyzeBehavior } from '@/lib/actions';
 import { Loader2, AlertTriangle, FileVideo, CheckCircle, Video } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { Progress } from '@/components/ui/progress';
+import { useActionState } from 'react';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 type AnalysisDialogProps = {
   open: boolean;
@@ -139,22 +141,23 @@ export function AnalysisDialog({ open, onOpenChange, location, feedId }: Analysi
     onOpenChange(isOpen);
   };
   
-  const passFramesToAction = (action: (formData: FormData) => void) => {
-    return (formData: FormData) => {
+  const passFramesToAction = (formData: FormData) => {
       if (frames.length === 0) {
         toast({
           variant: 'destructive',
           title: 'Kareler eksik',
           description: 'Lütfen analizden önce videodan kareleri yakalayın.',
         });
-        return;
+        // Prevent form submission by not calling the action
+        // We can't easily stop the form submission from here, so we check in the action.
+        // For a better UX, the button should be disabled.
+        return; 
       }
       frames.forEach((frame) => {
         formData.append(`frames`, frame);
       });
-      action(formData);
+      formAction(formData);
     };
-  };
 
 
   useEffect(() => {
@@ -177,6 +180,7 @@ export function AnalysisDialog({ open, onOpenChange, location, feedId }: Analysi
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[625px]">
+        <ScrollArea className="max-h-[80vh] pr-6">
         <DialogHeader>
           <DialogTitle className="font-headline">Davranış Analizi: {location}</DialogTitle>
           <DialogDescription>
@@ -204,7 +208,7 @@ export function AnalysisDialog({ open, onOpenChange, location, feedId }: Analysi
             </DialogFooter>
           </div>
         ) : (
-          <form action={passFramesToAction(formAction)} ref={formRef} className="space-y-4">
+          <form action={passFramesToAction} ref={formRef} className="space-y-4 pt-4">
             <input type="hidden" name="feedId" value={feedId} />
             
             <div className="space-y-2">
@@ -255,6 +259,7 @@ export function AnalysisDialog({ open, onOpenChange, location, feedId }: Analysi
             </DialogFooter>
           </form>
         )}
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );
