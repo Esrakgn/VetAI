@@ -1,7 +1,8 @@
 'use client';
 
 import { useFormStatus } from 'react-dom';
-import { useEffect, useState, useRef, useActionState } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import { useActionState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -16,7 +17,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { handleAnalyzeBehavior } from '@/lib/actions';
 import { Loader2, AlertTriangle, FileVideo, CheckCircle } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 
 type AnalysisDialogProps = {
   open: boolean;
@@ -48,6 +49,7 @@ function SubmitButton() {
 }
 
 export function AnalysisDialog({ open, onOpenChange, location, feedId }: AnalysisDialogProps) {
+  const { toast } = useToast();
   const [state, formAction] = useActionState(handleAnalyzeBehavior, initialState);
   const [videoDataUri, setVideoDataUri] = useState('');
   const [videoFileName, setVideoFileName] = useState('');
@@ -90,7 +92,7 @@ export function AnalysisDialog({ open, onOpenChange, location, feedId }: Analysi
         description: `Found ${state.anomalies.length} anomalies.`,
       });
     }
-  }, [state]);
+  }, [state, toast]);
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
