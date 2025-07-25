@@ -8,6 +8,7 @@ import { VideoFeeds } from '@/components/dashboard/video-feeds';
 import { RecentAlerts, type Alert } from '@/components/dashboard/recent-alerts';
 import { CausePredictor } from '@/components/dashboard/cause-predictor';
 import { Users, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const initialAlerts: Alert[] = [
   {
@@ -75,8 +76,18 @@ export default function Home() {
               <VideoFeeds onAnalyze={addAlert} />
             </div>
             <div className="space-y-8">
-              <RecentAlerts alerts={alerts} />
-              <CausePredictor />
+              <Tabs defaultValue="alerts" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="alerts">Son Alarmlar</TabsTrigger>
+                  <TabsTrigger value="predictor">Neden Tahmini</TabsTrigger>
+                </TabsList>
+                <TabsContent value="alerts" className="mt-4">
+                  <RecentAlerts alerts={alerts} />
+                </TabsContent>
+                <TabsContent value="predictor" className="mt-4">
+                  <CausePredictor />
+                </TabsContent>
+              </Tabs>
             </div>
           </div>
         </div>
