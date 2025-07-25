@@ -32,10 +32,10 @@ const initialState = {
   error: null,
 };
 
-function SubmitButton() {
+function SubmitButton({ framesCaptured }: { framesCaptured: boolean }) {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" disabled={pending}>
+    <Button type="submit" disabled={pending || !framesCaptured}>
       {pending ? (
         <>
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -139,22 +139,23 @@ export function AnalysisDialog({ open, onOpenChange, location, feedId }: Analysi
     onOpenChange(isOpen);
   };
   
-  const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (frames.length === 0) {
-      toast({
-        variant: 'destructive',
-        title: 'Kareler eksik',
-        description: 'Lütfen analizden önce videodan kareleri yakalayın.',
+  const passFramesToAction = (action: (formData: FormData) => void) => {
+    return (formData: FormData) => {
+      if (frames.length === 0) {
+        toast({
+          variant: 'destructive',
+          title: 'Kareler eksik',
+          description: 'Lütfen analizden önce videodan kareleri yakalayın.',
+        });
+        return;
+      }
+      frames.forEach((frame) => {
+        formData.append(`frames`, frame);
       });
-      return;
-    }
-    const formData = new FormData(event.currentTarget);
-    frames.forEach((frame, index) => {
-      formData.append(`frames[${index}]`, frame);
-    });
-    formAction(formData);
-  }
+      action(formData);
+    };
+  };
+
 
   useEffect(() => {
     if (state.error) {
@@ -203,7 +204,7 @@ export function AnalysisDialog({ open, onOpenChange, location, feedId }: Analysi
             </DialogFooter>
           </div>
         ) : (
-          <form onSubmit={handleFormSubmit} ref={formRef} className="space-y-4">
+          <form action={passFramesToAction(formAction)} ref={formRef} className="space-y-4">
             <input type="hidden" name="feedId" value={feedId} />
             
             <div className="space-y-2">
@@ -250,7 +251,7 @@ export function AnalysisDialog({ open, onOpenChange, location, feedId }: Analysi
 
             <DialogFooter>
                 <Button variant="ghost" type="button" onClick={() => handleOpenChange(false)}>İptal</Button>
-                <SubmitButton />
+                <SubmitButton framesCaptured={frames.length > 0} />
             </DialogFooter>
           </form>
         )}

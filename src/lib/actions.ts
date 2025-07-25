@@ -18,9 +18,7 @@ type AnalyzeState = {
 };
 
 export async function handleAnalyzeBehavior(prevState: AnalyzeState, formData: FormData): Promise<AnalyzeState> {
-  const frameEntries = Array.from(formData.entries())
-    .filter(([key]) => key.startsWith('frames['))
-    .map(([, value]) => value as string);
+  const frameEntries = formData.getAll('frames') as string[];
 
   const validatedFields = AnalyzeSchema.safeParse({
     frames: frameEntries,
