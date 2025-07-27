@@ -1,4 +1,3 @@
-
 'use client';
 
 import { AnalysisContainer } from '@/components/analysis/analysis-container';
