@@ -33,7 +33,7 @@ export function LiveMap() {
           zoom: 5,
         }}
         style={{width: '100%', height: '100%'}}
-        mapStyle="https://demotiles.maplibre.org/style.json"
+        mapStyle="https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"
         >
         {hotspots.map(hotspot => (
             <Marker
@@ -46,7 +46,7 @@ export function LiveMap() {
                     setPopupInfo(hotspot);
                 }}
             >
-                <Pin className="w-8 h-8 text-destructive fill-destructive" />
+                <Pin className="w-8 h-8 text-primary fill-primary" />
             </Marker>
         ))}
 
@@ -56,6 +56,7 @@ export function LiveMap() {
             longitude={Number(popupInfo.lng)}
             latitude={Number(popupInfo.lat)}
             onClose={() => setPopupInfo(null)}
+            className="[&_.maplibregl-popup-content]:bg-card [&_.maplibregl-popup-content]:text-card-foreground [&_.maplibregl-popup-close-button]:text-card-foreground"
           >
             <div className="space-y-1 text-sm p-1">
               <h3 className="font-bold text-base">{popupInfo.disease}</h3>
