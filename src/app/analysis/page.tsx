@@ -1,7 +1,6 @@
 
 'use client';
 
-import 'leaflet/dist/leaflet.css';
 import { AnalysisContainer } from '@/components/analysis/analysis-container';
 
 export default function AnalysisPage() {
