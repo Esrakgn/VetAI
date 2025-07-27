@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Pin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-type Hotspot = {
+export type Hotspot = {
   id: number;
   lat: number;
   lng: number;
@@ -14,14 +14,11 @@ type Hotspot = {
   risk: 'Yüksek' | 'Orta' | 'Düşük';
 };
 
-const hotspots: Hotspot[] = [
-  { id: 1, lat: 39.9334, lng: 32.8597, disease: 'Kuş Gribi', cases: 4, risk: 'Yüksek' },
-  { id: 2, lat: 38.4237, lng: 27.1428, disease: 'Şap Hastalığı', cases: 1, risk: 'Düşük' },
-  { id: 3, lat: 41.0082, lng: 28.9784, disease: 'Kuduz', cases: 2, risk: 'Orta' },
-  { id: 4, lat: 36.8969, lng: 30.7133, disease: 'Mavi Dil', cases: 3, risk: 'Orta' },
-];
+type LiveMapProps = {
+  hotspots: Hotspot[];
+}
 
-export function LiveMap() {
+export function LiveMap({ hotspots }: LiveMapProps) {
     const [popupInfo, setPopupInfo] = useState<Hotspot | null>(null);
 
   return (
@@ -49,7 +46,7 @@ export function LiveMap() {
                     setPopupInfo(hotspot);
                 }}
             >
-                <Pin className="w-8 h-8 text-primary fill-primary" />
+                <Pin className="w-8 h-8 text-destructive fill-destructive" />
             </Marker>
         ))}
 

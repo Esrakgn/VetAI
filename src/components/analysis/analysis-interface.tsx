@@ -36,16 +36,28 @@ const provinces = [
     "Iğdır", "Yalova", "Karabük", "Kilis", "Osmaniye", "Düzce"
 ];
 
-export function AnalysisInterface() {
+type AnalysisInterfaceProps = {
+  onReportSubmit: (disease: string, location: string) => void;
+};
+
+export function AnalysisInterface({ onReportSubmit }: AnalysisInterfaceProps) {
     const { toast } = useToast();
     const [showReportForm, setShowReportForm] = useState(false);
 
     const handleReportSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
+        const formData = new FormData(event.currentTarget);
+        const disease = formData.get('disease-type') as string;
+        const location = formData.get('location') as string;
+        
+        onReportSubmit(disease, location);
+
         setShowReportForm(false);
+        (event.target as HTMLFormElement).reset();
+
         toast({
         title: 'Rapor Gönderildi',
-        description: 'Salgın bildiriminiz başarıyla alındı ve haritaya eklenecektir.',
+        description: 'Salgın bildiriminiz başarıyla alındı ve haritaya eklendi.',
         className: "bg-success text-success-foreground",
         });
     };
@@ -67,15 +79,15 @@ export function AnalysisInterface() {
                     <form onSubmit={handleReportSubmit} className="space-y-4">
                     <div className="space-y-2">
                         <Label htmlFor="disease-type">Hastalık / Anormallik Türü</Label>
-                        <Input id="disease-type" placeholder="Örn: Kuş Gribi" required />
+                        <Input id="disease-type" name="disease-type" placeholder="Örn: Kuş Gribi" required />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="location">Konum</Label>
-                        <Input id="location" placeholder="Örn: Ankara, Çankaya" required />
+                        <Input id="location" name="location" placeholder="Örn: Ankara, Çankaya" required />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="notes">Ek Notlar</Label>
-                        <Textarea id="notes" placeholder="Gözlemlerinizi yazın..." />
+                        <Textarea id="notes" name="notes" placeholder="Gözlemlerinizi yazın..." />
                     </div>
                     <div className="flex gap-2 justify-end">
                         <Button type="button" variant="ghost" onClick={() => setShowReportForm(false)}>İptal</Button>
