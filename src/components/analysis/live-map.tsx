@@ -1,6 +1,6 @@
 'use client';
 
-import Map, { Marker, Popup } from 'react-map-gl/maplibre';
+import Map, { Marker, Popup, GeolocateControl } from 'react-map-gl/maplibre';
 import { useState } from 'react';
 import { Pin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -33,8 +33,11 @@ export function LiveMap() {
           zoom: 5,
         }}
         style={{width: '100%', height: '100%'}}
-        mapStyle="https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"
+        mapStyle="https://api.maptiler.com/maps/streets/style.json?key=get_your_own_OpIi9ZULNHzrESv6T2vL"
         >
+        
+        <GeolocateControl position="top-left" />
+
         {hotspots.map(hotspot => (
             <Marker
                 key={`marker-${hotspot.id}`}
@@ -46,7 +49,7 @@ export function LiveMap() {
                     setPopupInfo(hotspot);
                 }}
             >
-                <Pin className="w-8 h-8 text-primary fill-primary" />
+                <Pin className="w-8 h-8 text-accent fill-accent" />
             </Marker>
         ))}
 
