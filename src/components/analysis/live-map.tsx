@@ -1,6 +1,6 @@
 'use client';
 
-import Map, { Marker, Popup } from 'react-map-gl';
+import Map, { Marker, Popup } from 'react-map-gl/maplibre';
 import { useState } from 'react';
 import { Pin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
