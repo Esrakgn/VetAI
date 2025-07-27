@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import 'leaflet/dist/leaflet.css';
 import { Button } from '@/components/ui/button';
@@ -47,18 +47,15 @@ const provinces = [
     "Iğdır", "Yalova", "Karabük", "Kilis", "Osmaniye", "Düzce"
 ];
 
+// Dynamically import the map component to ensure it's client-side only
+const LiveMap = dynamic(() => import('@/components/analysis/live-map'), {
+  ssr: false,
+  loading: () => <p>Harita yükleniyor...</p>,
+});
+
 export default function AnalysisPage() {
   const { toast } = useToast();
   const [showReportForm, setShowReportForm] = useState(false);
-
-  // Dynamic import of the map component to ensure it's client-side only
-  const Map = useMemo(() => dynamic(
-    () => import('@/components/analysis/live-map'),
-    { 
-      loading: () => <p>Harita yükleniyor...</p>,
-      ssr: false
-    }
-  ), []);
 
   const handleReportSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -94,7 +91,7 @@ export default function AnalysisPage() {
             </CardHeader>
             <CardContent>
               <div className="relative w-full h-[500px] rounded-lg overflow-hidden bg-muted">
-                 <Map hotspots={hotspots} />
+                 <LiveMap hotspots={hotspots} />
               </div>
             </CardContent>
           </Card>
