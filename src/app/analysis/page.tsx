@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import Image from 'next/image';
+import { useMemo, useState } from 'react';
+import dynamic from 'next/dynamic';
+import 'leaflet/dist/leaflet.css';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -20,16 +21,17 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { MapPin, AlertTriangle, Flag, CheckCircle } from 'lucide-react';
+import { AlertTriangle, Flag, CheckCircle } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import { type LatLngExpression } from 'leaflet';
 
 // Mock data for hotspots
-const hotspots = [
-  { id: 1, top: '25%', left: '40%', disease: 'Kuş Gribi', color: 'bg-red-500' },
-  { id: 2, top: '50%', left: '60%', disease: 'Şap Hastalığı', color: 'bg-blue-500' },
-  { id: 3, top: '60%', left: '30%', disease: 'Düşük Hareketlilik', color: 'bg-yellow-500' },
-  { id: 4, top: '35%', left: '75%', disease: 'Kuş Gribi', color: 'bg-red-500' },
-  { id: 5, top: '70%', left: '50%', disease: 'Şap Hastalığı', color: 'bg-blue-500' },
+const hotspots: { id: number; position: LatLngExpression; disease: string; color: string; }[] = [
+  { id: 1, position: [39.9334, 32.8597], disease: 'Kuş Gribi', color: 'red' }, // Ankara
+  { id: 2, position: [41.0082, 28.9784], disease: 'Şap Hastalığı', color: 'blue' }, // Istanbul
+  { id: 3, position: [38.4237, 27.1428], disease: 'Düşük Hareketlilik', color: 'yellow' }, // Izmir
+  { id: 4, position: [36.8969, 30.7133], disease: 'Kuş Gribi', color: 'red' }, // Antalya
+  { id: 5, position: [40.1826, 29.0669], disease: 'Şap Hastalığı', color: 'blue' }, // Bursa
 ];
 
 const provinces = [
@@ -47,8 +49,16 @@ const provinces = [
 
 export default function AnalysisPage() {
   const { toast } = useToast();
-  const [selectedHotspot, setSelectedHotspot] = useState<any>(null);
   const [showReportForm, setShowReportForm] = useState(false);
+
+  // Dynamic import of the map component to ensure it's client-side only
+  const Map = useMemo(() => dynamic(
+    () => import('@/components/analysis/live-map'),
+    { 
+      loading: () => <p>Harita yükleniyor...</p>,
+      ssr: false
+    }
+  ), []);
 
   const handleReportSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -83,40 +93,8 @@ export default function AnalysisPage() {
               </Button>
             </CardHeader>
             <CardContent>
-              <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-muted">
-                <Image
-                  src="https://placehold.co/1200x800"
-                  alt="Bölge haritası"
-                  layout="fill"
-                  objectFit="cover"
-                  data-ai-hint="map satellite"
-                />
-                <div className="absolute inset-0">
-                  {hotspots.map((hotspot) => (
-                    <div
-                      key={hotspot.id}
-                      className="absolute transform -translate-x-1/2 -translate-y-1/2"
-                      style={{ top: hotspot.top, left: hotspot.left }}
-                    >
-                      <div
-                        onMouseEnter={() => setSelectedHotspot(hotspot)}
-                        onMouseLeave={() => setSelectedHotspot(null)}
-                        className={`w-4 h-4 rounded-full ${hotspot.color} cursor-pointer animate-pulse border-2 border-background`}
-                      />
-                    </div>
-                  ))}
-                </div>
-                 {selectedHotspot && (
-                  <div
-                    className="absolute p-2 text-sm bg-background/80 backdrop-blur-sm rounded-md shadow-lg pointer-events-none"
-                    style={{
-                      top: `calc(${selectedHotspot.top} - 30px)`,
-                      left: `calc(${selectedHotspot.left} + 15px)`,
-                    }}
-                  >
-                    <p className="font-bold">{selectedHotspot.disease}</p>
-                  </div>
-                )}
+              <div className="relative w-full h-[500px] rounded-lg overflow-hidden bg-muted">
+                 <Map hotspots={hotspots} />
               </div>
             </CardContent>
           </Card>
