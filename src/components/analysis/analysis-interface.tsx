@@ -90,8 +90,8 @@ export function AnalysisInterface({ onReportSubmit }: AnalysisInterfaceProps) {
                         <Input id="disease-type" name="disease-type" placeholder="Örn: Kuş Gribi" required />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="location">Konum</Label>
-                        <Input id="location" name="location" placeholder="Örn: Ankara, Çankaya" required />
+                        <Label htmlFor="location">Konum (İl Adı)</Label>
+                        <Input id="location" name="location" placeholder="Örn: Eskişehir" required />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="notes">Ek Notlar</Label>
@@ -153,3 +153,4 @@ export function AnalysisInterface({ onReportSubmit }: AnalysisInterfaceProps) {
     )
 
 }
+    
