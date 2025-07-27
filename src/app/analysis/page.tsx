@@ -32,6 +32,19 @@ const hotspots = [
   { id: 5, top: '70%', left: '50%', disease: 'Şap Hastalığı', color: 'bg-blue-500' },
 ];
 
+const provinces = [
+    "Adana", "Adıyaman", "Afyonkarahisar", "Ağrı", "Amasya", "Ankara", "Antalya", "Artvin",
+    "Aydın", "Balıkesir", "Bilecik", "Bingöl", "Bitlis", "Bolu", "Burdur", "Bursa", "Çanakkale",
+    "Çankırı", "Çorum", "Denizli", "Diyarbakır", "Edirne", "Elazığ", "Erzincan", "Erzurum",
+    "Eskişehir", "Gaziantep", "Giresun", "Gümüşhane", "Hakkâri", "Hatay", "Isparta", "Mersin",
+    "İstanbul", "İzmir", "Kars", "Kastamonu", "Kayseri", "Kırklareli", "Kırşehir", "Kocaeli",
+    "Konya", "Kütahya", "Malatya", "Manisa", "Kahramanmaraş", "Mardin", "Muğla", "Muş",
+    "Nevşehir", "Niğde", "Ordu", "Rize", "Sakarya", "Samsun", "Siirt", "Sinop", "Sivas",
+    "Tekirdağ", "Tokat", "Trabzon", "Tunceli", "Şanlıurfa", "Uşak", "Van", "Yozgat", "Zonguldak",
+    "Aksaray", "Bayburt", "Karaman", "Kırıkkale", "Batman", "Şırnak", "Bartın", "Ardahan",
+    "Iğdır", "Yalova", "Karabük", "Kilis", "Osmaniye", "Düzce"
+];
+
 export default function AnalysisPage() {
   const { toast } = useToast();
   const [selectedHotspot, setSelectedHotspot] = useState<any>(null);
@@ -147,12 +160,12 @@ export default function AnalysisPage() {
                   <Label>Konum Filtresi</Label>
                   <Select>
                     <SelectTrigger>
-                      <SelectValue placeholder="Bir bölge seçin" />
+                      <SelectValue placeholder="Bir il seçin" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="bolge-a">Bölge A (Ankara)</SelectItem>
-                      <SelectItem value="bolge-b">Bölge B (İstanbul)</SelectItem>
-                      <SelectItem value="bolge-c">Bölge C (İzmir)</SelectItem>
+                      {provinces.map((province) => (
+                        <SelectItem key={province} value={province.toLowerCase().replace(/ /g, '-')}>{province}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
