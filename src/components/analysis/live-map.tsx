@@ -33,7 +33,7 @@ export function LiveMap() {
           zoom: 5,
         }}
         style={{width: '100%', height: '100%'}}
-        mapStyle="https://api.maptiler.com/maps/streets/style.json?key=get_your_own_OpIi9ZULNHzrESv6T2vL"
+        mapStyle="https://api.maptiler.com/maps/streets/style.json?key=rTRWOseduldWVihjLMs3"
         >
         
         <GeolocateControl position="top-left" />
@@ -49,7 +49,7 @@ export function LiveMap() {
                     setPopupInfo(hotspot);
                 }}
             >
-                <Pin className="w-8 h-8 text-accent fill-accent" />
+                <Pin className="w-8 h-8 text-primary fill-primary" />
             </Marker>
         ))}
 
