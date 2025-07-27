@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { analyzeBehavior } from '@/ai/flows/analyze-behavior';
 import { predictAnomalyCause } from '@/ai/flows/predict-anomaly-cause';
 import { diagnoseDisease } from '@/ai/flows/diagnose-disease';
+import { generateAdvice } from '@/ai/flows/generate-advice';
 
 // Schema for analyzeBehavior form
 const AnalyzeSchema = z.object({
@@ -139,6 +140,48 @@ export async function handleDiagnoseDisease(prevState: DiagnoseState, formData: 
             confidence: null,
             recommendation: null,
             error: e.message || 'Teşhis sırasında bilinmeyen bir hata oluştu.',
+        };
+    }
+}
+
+// Schema for generateAdvice form
+const AdviceSchema = z.object({
+    question: z.string().min(1, 'Soru boş olamaz.'),
+    chatHistory: z.string(), // JSON string
+});
+
+type AdviceState = {
+    response: string | null;
+    error: string | null;
+}
+
+export async function handleGenerateAdvice(prevState: AdviceState, formData: FormData): Promise<AdviceState> {
+     const validatedFields = AdviceSchema.safeParse({
+        question: formData.get('question'),
+        chatHistory: formData.get('chatHistory'),
+    });
+
+    if (!validatedFields.success) {
+        return {
+            response: null,
+            error: validatedFields.error.flatten().fieldErrors.question?.[0] || 'Geçersiz girdi.',
+        };
+    }
+    
+    try {
+        const chatHistory = JSON.parse(validatedFields.data.chatHistory);
+        const result = await generateAdvice({ 
+            question: validatedFields.data.question,
+            chatHistory: chatHistory 
+        });
+        return {
+            response: result.response,
+            error: null,
+        };
+    } catch (e: any) {
+        return {
+            response: null,
+            error: e.message || 'Tavsiye oluşturulurken bilinmeyen bir hata oluştu.',
         };
     }
 }
