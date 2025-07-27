@@ -50,15 +50,24 @@ export function AnalysisInterface({ onReportSubmit }: AnalysisInterfaceProps) {
         const disease = formData.get('disease-type') as string;
         const location = formData.get('location') as string;
         
+        if (!disease || !location) {
+          toast({
+            variant: "destructive",
+            title: "Eksik Bilgi",
+            description: "Lütfen hastalık ve konum alanlarını doldurun.",
+          });
+          return;
+        }
+
         onReportSubmit(disease, location);
 
         setShowReportForm(false);
         (event.target as HTMLFormElement).reset();
 
         toast({
-        title: 'Rapor Gönderildi',
-        description: 'Salgın bildiriminiz başarıyla alındı ve haritaya eklendi.',
-        className: "bg-success text-success-foreground",
+          title: 'Rapor Gönderildi',
+          description: 'Salgın bildiriminiz başarıyla alındı ve haritaya eklendi.',
+          className: "bg-success text-success-foreground",
         });
     };
     
