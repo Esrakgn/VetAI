@@ -7,6 +7,7 @@ import { diagnoseDisease } from '@/ai/flows/diagnose-disease';
 import { generateAdvice } from '@/ai/flows/generate-advice';
 import { detectBirth } from '@/ai/flows/detect-birth';
 import { detectMastitis } from '@/ai/flows/detect-mastitis';
+import { analyzeNewbornBehavior, AnalyzeNewbornBehaviorOutput } from '@/ai/flows/analyze-newborn-behavior';
 
 
 // Schema for analyzeBehavior form
@@ -287,6 +288,47 @@ export async function handleDetectMastitis(prevState: MastitisState, formData: F
         confidence: null,
         recommendation: null,
         error: e.message || 'An unknown error occurred during mastitis detection.',
+    };
+  }
+}
+
+// Schema for analyzeNewbornBehavior form
+const NewbornSchema = z.object({
+  frames: z.array(z.string()).min(1, 'At least one video frame is required.'),
+});
+
+type NewbornState = AnalyzeNewbornBehaviorOutput & { error: string | null };
+
+export async function handleAnalyzeNewborn(prevState: NewbornState, formData: FormData): Promise<NewbornState> {
+  const frameEntries = formData.getAll('frames') as string[];
+
+  const validatedFields = NewbornSchema.safeParse({
+    frames: frameEntries,
+  });
+
+  if (!validatedFields.success) {
+    return {
+      sucklingBehavior: 'Hayır',
+      activityLevel: 'Yok',
+      riskScore: 0,
+      summary: '',
+      error: validatedFields.error.flatten().fieldErrors.frames?.[0] || 'Invalid input.',
+    };
+  }
+
+  try {
+    const result = await analyzeNewbornBehavior(validatedFields.data);
+    return {
+      ...result,
+      error: null,
+    };
+  } catch (e: any) {
+    return {
+      sucklingBehavior: 'Hayır',
+      activityLevel: 'Yok',
+      riskScore: 0,
+      summary: '',
+      error: e.message || 'An unknown error occurred during newborn behavior analysis.',
     };
   }
 }

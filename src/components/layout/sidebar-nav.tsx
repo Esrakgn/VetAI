@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { AreaChart, History, LayoutDashboard, Settings, Stethoscope, Lightbulb, MessageCircle, Baby } from 'lucide-react';
+import { AreaChart, History, LayoutDashboard, Settings, Stethoscope, Lightbulb, MessageCircle, Baby, Newborn } from 'lucide-react';
 import { Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from '@/components/ui/sidebar';
 import Logo from '@/components/logo';
 
@@ -10,6 +10,7 @@ const menuItems = [
   { path: '/dashboard', label: 'Kontrol Paneli', icon: LayoutDashboard },
   { path: '/diagnosis', label: 'Hastalık Teşhisi', icon: Stethoscope },
   { path: '/birth-detection', label: 'Doğum Tespiti', icon: Baby },
+  { path: '/newborn-analysis', label: 'Yeni Doğan Analizi', icon: Newborn },
   { path: '/assistance', label: 'Yardım Merkezi', icon: MessageCircle },
   { path: '/predictor', label: 'Neden Tahmini', icon: Lightbulb },
   { path: '/analysis', label: 'Analiz', icon: AreaChart },
