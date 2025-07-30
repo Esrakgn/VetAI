@@ -18,7 +18,6 @@ const AnalyzeSchema = z.object({
 
 type AnalyzeState = {
   anomalies: string[] | null;
-  causePrediction: string | null;
   error: string | null;
 };
 
@@ -34,7 +33,6 @@ export async function handleAnalyzeBehavior(prevState: AnalyzeState, formData: F
   if (!validatedFields.success) {
     return {
       anomalies: null,
-      causePrediction: null,
       error: validatedFields.error.flatten().fieldErrors.frames?.[0] || validatedFields.error.flatten().fieldErrors.behaviorDescription?.[0] || 'Invalid input.',
     };
   }
@@ -43,13 +41,11 @@ export async function handleAnalyzeBehavior(prevState: AnalyzeState, formData: F
     const result = await analyzeBehavior(validatedFields.data);
     return {
       anomalies: result.anomalies,
-      causePrediction: result.causePrediction,
       error: null,
     };
   } catch (e: any) {
     return {
       anomalies: null,
-      causePrediction: null,
       error: e.message || 'An unknown error occurred during analysis.',
     };
   }
@@ -148,8 +144,8 @@ export async function handleGenerateAdvice(prevState: AdviceState, formData: For
 
 // Schema for detectBirth form
 const BirthSchema = z.object({
-  frames: z.array(z.string()).min(1, 'At least one video frame is required.'),
-  feedId: z.string(),
+  frames: z.array(z.string()).optional(),
+  feedId: z.string().optional(),
 });
 
 type BirthState = {
@@ -158,39 +154,43 @@ type BirthState = {
   keyFrame: string | null;
   evidence: string | null;
   error: string | null;
+  key: number;
 };
 
 export async function handleDetectBirth(prevState: BirthState, formData: FormData): Promise<BirthState> {
   const frameEntries = formData.getAll('frames') as string[];
+  const feedId = formData.get('feedId') as string;
+
+  // This is a reset action if frames are not provided
+  if (frameEntries.length === 0) {
+    return { ...prevState, isBirthDetected: null, evidence: null, keyFrame: null, error: null, key: Date.now() };
+  }
 
   const validatedFields = BirthSchema.safeParse({
     frames: frameEntries,
-    feedId: formData.get('feedId'),
+    feedId: feedId,
   });
 
   if (!validatedFields.success) {
     return {
-      isBirthDetected: null,
-      estimatedBirthTime: null,
-      keyFrame: null,
-      evidence: null,
+      ...prevState,
       error: validatedFields.error.flatten().fieldErrors.frames?.[0] || 'Invalid input.',
+      key: Date.now(),
     };
   }
 
   try {
-    const result = await detectBirth(validatedFields.data);
+    const result = await detectBirth({ frames: frameEntries });
     return {
       ...result,
       error: null,
+      key: Date.now(),
     };
   } catch (e: any) {
     return {
-      isBirthDetected: null,
-      estimatedBirthTime: null,
-      keyFrame: null,
-      evidence: null,
+      ...prevState,
       error: e.message || 'An unknown error occurred during birth detection.',
+      key: Date.now(),
     };
   }
 }

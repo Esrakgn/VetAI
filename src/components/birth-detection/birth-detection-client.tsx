@@ -27,13 +27,15 @@ const cameraFeeds = [
   { id: 'common-area', location: 'Ortak Alan' },
 ];
 
-const initialState = {
+const getInitialState = () => ({
   isBirthDetected: null,
   estimatedBirthTime: null,
   keyFrame: null,
   evidence: null,
   error: null,
-};
+  // Add a key to force re-rendering and state reset
+  key: Date.now(), 
+});
 
 function SubmitButton({ framesCaptured }: { framesCaptured: boolean }) {
   const { pending } = useFormStatus();
@@ -53,10 +55,9 @@ function SubmitButton({ framesCaptured }: { framesCaptured: boolean }) {
 
 export function BirthDetectionClient() {
   const { toast } = useToast();
-  const [state, formAction] = useActionState(handleDetectBirth, initialState);
+  const [state, formAction] = useActionState(handleDetectBirth, getInitialState());
   
   const [frames, setFrames] = useState<string[]>([]);
-  const framesRef = useRef<string[]>([]);
   const [videoFileName, setVideoFileName] = useState('');
   const [progress, setProgress] = useState(0);
   const [selectedFeed, setSelectedFeed] = useState<string>('');
@@ -104,7 +105,6 @@ export function BirthDetectionClient() {
     const doCaptureFrame = () => {
       if (framesCaptured >= frameCount) {
         setFrames(capturedFrames);
-        framesRef.current = capturedFrames;
         setProgress(100);
         return;
       }
@@ -137,15 +137,19 @@ export function BirthDetectionClient() {
     formRef.current?.reset();
     if(fileInputRef.current) fileInputRef.current.value = "";
     setFrames([]);
-    framesRef.current = [];
     setVideoFileName('');
     setProgress(0);
     if(videoRef.current) videoRef.current.src = "";
-    formAction(initialState as any);
+    // This is the correct way to trigger a reset with useActionState
+    // by re-invoking the initializer. We can't call formAction directly here.
+    // A simple way to signal a reset is to have a parent component re-render this one with a new key.
+    // Or, handle state reset more manually. Since formAction is now tied to useActionState,
+    // we will create a new `initialState` to reset it.
+    formAction(new FormData()); // Pass empty form data to reset
   }
 
   const enhancedFormAction = (formData: FormData) => {
-    if (framesRef.current.length === 0) {
+    if (frames.length === 0 && !formData.has('frames')) {
        toast({
         variant: 'destructive',
         title: 'Kareler eksik',
@@ -153,7 +157,7 @@ export function BirthDetectionClient() {
       });
       return;
     }
-    framesRef.current.forEach((frame) => {
+    frames.forEach((frame) => {
       formData.append(`frames`, frame);
     });
 
@@ -161,7 +165,7 @@ export function BirthDetectionClient() {
   }
 
   useEffect(() => {
-    if (!state) return;
+    if (!state || !state.key) return; // Don't run on initial state
 
     if (state.error) {
       toast({
