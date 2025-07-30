@@ -44,7 +44,10 @@ const initialMastitisState = {
   error: null,
 };
 
-type AnalysisResult = typeof initialBehaviorState | typeof initialMastitisState;
+type BehaviorAnalysisResult = typeof initialBehaviorState;
+type MastitisAnalysisResult = typeof initialMastitisState;
+type AnalysisResult = BehaviorAnalysisResult | MastitisAnalysisResult;
+
 
 function SubmitButton({ framesCaptured }: { framesCaptured: boolean }) {
   const { pending } = useFormStatus();
@@ -159,6 +162,53 @@ export function AnalysisDialog({ open, onOpenChange, location, feedId, onAnalyze
     onOpenChange(isOpen);
   };
   
+  const handleAnalysisComplete = (result: AnalysisResult) => {
+    setAnalysisResult(result);
+
+    if (result.error) {
+      toast({
+        variant: 'destructive',
+        title: 'Analiz Başarısız',
+        description: result.error,
+      });
+    } else if ('anomalies' in result && result.anomalies) {
+      if (result.anomalies.length > 0) {
+        result.anomalies.forEach((anomaly) => {
+          onAnalyze(location, anomaly);
+        });
+        toast({
+          variant: 'destructive',
+          title: 'Uyarı: Anormallik Tespit Edildi',
+          description: `${result.anomalies.length} adet anormal davranış bulundu. Detaylar için sonucu inceleyin.`,
+        });
+      } else {
+        toast({
+          variant: 'default',
+          className: "bg-success text-success-foreground",
+          title: 'Analiz Tamamlandı',
+          description: `Anormal bir davranış tespit edilmedi.`,
+        });
+      }
+    } else if ('isMastitisRisk' in result) {
+      if(result.isMastitisRisk) {
+        const recommendation = result.recommendation || "Mastitis riski tespit edildi.";
+        onAnalyze(location, "Mastitis Riski");
+        toast({
+          variant: 'destructive',
+          title: 'Uyarı: Mastitis Riski Tespit Edildi',
+          description: recommendation,
+        });
+      } else {
+         toast({
+            variant: 'default',
+            className: "bg-success text-success-foreground",
+            title: 'Analiz Tamamlandı',
+            description: `Mastitis riski tespit edilmedi.`,
+        });
+      }
+    }
+  };
+
   const passFramesToAction = async (formData: FormData) => {
       if (frames.length === 0) {
         toast({
@@ -178,53 +228,8 @@ export function AnalysisDialog({ open, onOpenChange, location, feedId, onAnalyze
       } else {
         result = await handleAnalyzeBehavior(initialBehaviorState, formData);
       }
-      setAnalysisResult(result);
+      handleAnalysisComplete(result);
     };
-
-  useEffect(() => {
-    if (!analysisResult) return;
-
-    if (analysisResult.error) {
-      toast({
-        variant: 'destructive',
-        title: 'Analiz Başarısız',
-        description: analysisResult.error,
-      });
-    } else if ('anomalies' in analysisResult && analysisResult.anomalies) {
-        if (analysisResult.anomalies.length > 0) {
-          analysisResult.anomalies.forEach((anomaly) => {
-            onAnalyze(location, anomaly);
-          });
-          toast({
-            variant: 'destructive',
-            title: 'Uyarı: Anormallik Tespit Edildi',
-            description: `${analysisResult.anomalies.length} adet anormal davranış bulundu. Detaylar için sonucu inceleyin.`,
-          });
-        } else {
-          toast({
-            variant: 'default',
-            className: "bg-success text-success-foreground",
-            title: 'Analiz Tamamlandı',
-            description: `Anormal bir davranış tespit edilmedi.`,
-          });
-        }
-    } else if ('isMastitisRisk' in analysisResult && analysisResult.isMastitisRisk) {
-        const recommendation = analysisResult.recommendation || "Mastitis riski tespit edildi.";
-        onAnalyze(location, "Mastitis Riski");
-        toast({
-            variant: 'destructive',
-            title: 'Uyarı: Mastitis Riski Tespit Edildi',
-            description: recommendation,
-        });
-    } else if ('isMastitisRisk' in analysisResult && analysisResult.isMastitisRisk === false) {
-        toast({
-            variant: 'default',
-            className: "bg-success text-success-foreground",
-            title: 'Analiz Tamamlandı',
-            description: `Mastitis riski tespit edilmedi.`,
-        });
-    }
-  }, [analysisResult, toast, location, onAnalyze]);
 
   const renderResult = () => {
     if (!analysisResult) return null;
