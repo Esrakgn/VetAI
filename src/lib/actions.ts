@@ -6,6 +6,7 @@ import { predictAnomalyCause } from '@/ai/flows/predict-anomaly-cause';
 import { diagnoseDisease } from '@/ai/flows/diagnose-disease';
 import { generateAdvice } from '@/ai/flows/generate-advice';
 import { detectBirth } from '@/ai/flows/detect-birth';
+import { detectMastitis } from '@/ai/flows/detect-mastitis';
 
 
 // Schema for analyzeBehavior form
@@ -234,6 +235,58 @@ export async function handleDetectBirth(prevState: BirthState, formData: FormDat
       keyFrame: null,
       evidence: null,
       error: e.message || 'An unknown error occurred during birth detection.',
+    };
+  }
+}
+
+// Schema for detectMastitis form
+const MastitisSchema = z.object({
+  frames: z.array(z.string()).min(1, 'At least one video frame is required.'),
+  feedId: z.string(),
+});
+
+type MastitisState = {
+    isMastitisRisk: boolean | null;
+    detectedSigns: string[] | null;
+    confidence: string | null;
+    recommendation: string | null;
+    error: string | null;
+};
+
+export async function handleDetectMastitis(prevState: MastitisState, formData: FormData): Promise<MastitisState> {
+  const frameEntries = formData.getAll('frames') as string[];
+
+  const validatedFields = MastitisSchema.safeParse({
+    frames: frameEntries,
+    feedId: formData.get('feedId'),
+  });
+
+  if (!validatedFields.success) {
+    return {
+        isMastitisRisk: null,
+        detectedSigns: null,
+        confidence: null,
+        recommendation: null,
+        error: validatedFields.error.flatten().fieldErrors.frames?.[0] || 'Invalid input.',
+    };
+  }
+
+  try {
+    const result = await detectMastitis(validatedFields.data);
+    if(result.isMastitisRisk) {
+        // Here you could potentially trigger another action, like creating an alert
+    }
+    return {
+      ...result,
+      error: null,
+    };
+  } catch (e: any) {
+    return {
+        isMastitisRisk: null,
+        detectedSigns: null,
+        confidence: null,
+        recommendation: null,
+        error: e.message || 'An unknown error occurred during mastitis detection.',
     };
   }
 }

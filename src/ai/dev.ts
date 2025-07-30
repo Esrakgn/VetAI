@@ -6,3 +6,4 @@ import '@/ai/flows/predict-anomaly-cause.ts';
 import '@/ai/flows/diagnose-disease.ts';
 import '@/ai/flows/generate-advice.ts';
 import '@/ai/flows/detect-birth.ts';
+import '@/ai/flows/detect-mastitis.ts';

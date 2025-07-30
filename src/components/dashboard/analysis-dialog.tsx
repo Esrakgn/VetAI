@@ -1,7 +1,8 @@
 'use client';
 
 import { useFormStatus } from 'react-dom';
-import { useEffect, useState, useRef, useActionState } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import { handleAnalyzeBehavior, handleDetectMastitis } from '@/lib/actions';
 import {
   Dialog,
   DialogContent,
@@ -14,11 +15,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { handleAnalyzeBehavior } from '@/lib/actions';
-import { Loader2, AlertTriangle, FileVideo, CheckCircle, Video } from 'lucide-react';
+import { Loader2, AlertTriangle, FileVideo, CheckCircle, Video, Activity } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
 
 type AnalysisDialogProps = {
   open: boolean;
@@ -28,11 +30,21 @@ type AnalysisDialogProps = {
   onAnalyze: (location: string, anomaly: string) => void;
 };
 
-const initialState = {
+const initialBehaviorState = {
   anomalies: null,
   causePrediction: null,
   error: null,
 };
+
+const initialMastitisState = {
+  isMastitisRisk: null,
+  detectedSigns: null,
+  confidence: null,
+  recommendation: null,
+  error: null,
+};
+
+type AnalysisResult = typeof initialBehaviorState | typeof initialMastitisState;
 
 function SubmitButton({ framesCaptured }: { framesCaptured: boolean }) {
   const { pending } = useFormStatus();
@@ -52,10 +64,11 @@ function SubmitButton({ framesCaptured }: { framesCaptured: boolean }) {
 
 export function AnalysisDialog({ open, onOpenChange, location, feedId, onAnalyze }: AnalysisDialogProps) {
   const { toast } = useToast();
-  const [state, formAction] = useActionState(handleAnalyzeBehavior, initialState);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [frames, setFrames] = useState<string[]>([]);
   const [videoFileName, setVideoFileName] = useState('');
   const [progress, setProgress] = useState(0);
+  const [analysisType, setAnalysisType] = useState<'behavior' | 'mastitis'>('behavior');
   const formRef = useRef<HTMLFormElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -130,18 +143,23 @@ export function AnalysisDialog({ open, onOpenChange, location, feedId, onAnalyze
     }
   }
   
-  const handleOpenChange = (isOpen: boolean) => {
-    if (!isOpen) {
+  const resetState = () => {
       formRef.current?.reset();
       setFrames([]);
       setVideoFileName('');
       setProgress(0);
       if(videoRef.current) videoRef.current.src = "";
+      setAnalysisResult(null);
+  }
+
+  const handleOpenChange = (isOpen: boolean) => {
+    if (!isOpen) {
+      resetState();
     }
     onOpenChange(isOpen);
   };
   
-  const passFramesToAction = (formData: FormData) => {
+  const passFramesToAction = async (formData: FormData) => {
       if (frames.length === 0) {
         toast({
           variant: 'destructive',
@@ -153,35 +171,126 @@ export function AnalysisDialog({ open, onOpenChange, location, feedId, onAnalyze
       frames.forEach((frame) => {
         formData.append(`frames`, frame);
       });
-      formAction(formData);
+      
+      let result;
+      if (analysisType === 'mastitis') {
+        result = await handleDetectMastitis(initialMastitisState, formData);
+      } else {
+        result = await handleAnalyzeBehavior(initialBehaviorState, formData);
+      }
+      setAnalysisResult(result);
     };
 
-
   useEffect(() => {
-    if (state.error) {
+    if (!analysisResult) return;
+
+    if (analysisResult.error) {
       toast({
         variant: 'destructive',
         title: 'Analiz Başarısız',
-        description: state.error,
+        description: analysisResult.error,
       });
-    } else if (state.anomalies && state.anomalies.length > 0) {
-      state.anomalies.forEach((anomaly) => {
-        onAnalyze(location, anomaly);
-      });
-      toast({
-        variant: 'destructive',
-        title: 'Uyarı: Anormallik Tespit Edildi',
-        description: `${state.anomalies.length} adet anormal davranış bulundu. Detaylar için sonucu inceleyin.`,
-      });
-    } else if (state.anomalies) {
-       toast({
-        variant: 'default',
-        className: "bg-success text-success-foreground",
-        title: 'Analiz Tamamlandı',
-        description: `Anormal bir davranış tespit edilmedi.`,
-      });
+    } else if ('anomalies' in analysisResult && analysisResult.anomalies) {
+        if (analysisResult.anomalies.length > 0) {
+          analysisResult.anomalies.forEach((anomaly) => {
+            onAnalyze(location, anomaly);
+          });
+          toast({
+            variant: 'destructive',
+            title: 'Uyarı: Anormallik Tespit Edildi',
+            description: `${analysisResult.anomalies.length} adet anormal davranış bulundu. Detaylar için sonucu inceleyin.`,
+          });
+        } else {
+          toast({
+            variant: 'default',
+            className: "bg-success text-success-foreground",
+            title: 'Analiz Tamamlandı',
+            description: `Anormal bir davranış tespit edilmedi.`,
+          });
+        }
+    } else if ('isMastitisRisk' in analysisResult && analysisResult.isMastitisRisk) {
+        const recommendation = analysisResult.recommendation || "Mastitis riski tespit edildi.";
+        onAnalyze(location, "Mastitis Riski");
+        toast({
+            variant: 'destructive',
+            title: 'Uyarı: Mastitis Riski Tespit Edildi',
+            description: recommendation,
+        });
+    } else if ('isMastitisRisk' in analysisResult && analysisResult.isMastitisRisk === false) {
+        toast({
+            variant: 'default',
+            className: "bg-success text-success-foreground",
+            title: 'Analiz Tamamlandı',
+            description: `Mastitis riski tespit edilmedi.`,
+        });
     }
-  }, [state, toast, location, onAnalyze]);
+  }, [analysisResult, toast, location, onAnalyze]);
+
+  const renderResult = () => {
+    if (!analysisResult) return null;
+
+    if ('anomalies' in analysisResult && analysisResult.anomalies) {
+      return (
+        <div className="py-4 space-y-4">
+            <h3 className="text-lg font-semibold flex items-center text-primary"><CheckCircle className="mr-2 h-5 w-5" />Genel Davranış Analizi Tamamlandı</h3>
+            <div>
+              <h4 className="font-semibold text-foreground">Tespit Edilen Anormallikler</h4>
+              {analysisResult.anomalies.length > 0 ? (
+                <ul className="list-disc list-inside mt-2 text-sm text-muted-foreground bg-secondary p-3 rounded-md">
+                  {analysisResult.anomalies.map((anomaly, index) => <li key={index}>{anomaly}</li>)}
+                </ul>
+              ) : <p className="text-sm text-muted-foreground mt-1">Anormallik tespit edilmedi.</p>}
+            </div>
+             <div>
+              <h4 className="font-semibold text-foreground">Olası Nedenler</h4>
+              <p className="text-sm text-muted-foreground mt-1 bg-secondary p-3 rounded-md">{analysisResult.causePrediction}</p>
+            </div>
+        </div>
+      );
+    }
+
+    if ('isMastitisRisk' in analysisResult) {
+      return (
+        <div className="py-4 space-y-4">
+            <h3 className="text-lg font-semibold flex items-center text-primary"><Activity className="mr-2 h-5 w-5" />Mastitis Analizi Tamamlandı</h3>
+            
+             <div className="flex items-center space-x-2">
+                <p className="font-semibold">Sonuç:</p>
+                {analysisResult.isMastitisRisk ? (
+                <Badge variant="destructive">
+                    Risk Tespit Edildi
+                </Badge>
+                ) : (
+                <Badge className="bg-success hover:bg-success">
+                    Risk Tespit Edilmedi
+                </Badge>
+                )}
+            </div>
+
+            {analysisResult.isMastitisRisk && (
+              <>
+                 <div className="flex items-center space-x-2">
+                    <p className="font-semibold">Güven:</p>
+                    <Badge variant={analysisResult.confidence === 'Yüksek' ? 'destructive' : 'secondary'}>{analysisResult.confidence}</Badge>
+                 </div>
+                 <div>
+                    <h4 className="font-semibold text-foreground">Tespit Edilen Belirtiler</h4>
+                     <ul className="list-disc list-inside mt-2 text-sm text-muted-foreground bg-secondary p-3 rounded-md">
+                        {analysisResult.detectedSigns?.map((sign, index) => <li key={index}>{sign}</li>)}
+                    </ul>
+                 </div>
+              </>
+            )}
+             <div>
+                <h4 className="font-semibold text-foreground">Öneri</h4>
+                <p className="text-sm text-muted-foreground mt-1 bg-secondary p-3 rounded-md">{analysisResult.recommendation}</p>
+            </div>
+        </div>
+      );
+    }
+    
+    return null;
+  }
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -190,32 +299,30 @@ export function AnalysisDialog({ open, onOpenChange, location, feedId, onAnalyze
         <DialogHeader>
           <DialogTitle className="font-headline">Davranış Analizi: {location}</DialogTitle>
           <DialogDescription>
-            Anormallikleri tespit etmek için bir video klip yükleyin, kareleri yakalayın ve beklenen normal davranışları tanımlayın.
+             Anormallikleri veya mastitis riskini tespit etmek için analiz türünü seçin, bir video klip yükleyin ve analizi başlatın.
           </DialogDescription>
         </DialogHeader>
 
-        {state.anomalies ? (
-          <div className="py-4 space-y-4">
-            <h3 className="text-lg font-semibold flex items-center text-primary"><CheckCircle className="mr-2 h-5 w-5" />Analiz Tamamlandı</h3>
-            <div>
-              <h4 className="font-semibold text-foreground">Tespit Edilen Anormallikler</h4>
-              {state.anomalies.length > 0 ? (
-                <ul className="list-disc list-inside mt-2 text-sm text-muted-foreground bg-secondary p-3 rounded-md">
-                  {state.anomalies.map((anomaly, index) => <li key={index}>{anomaly}</li>)}
-                </ul>
-              ) : <p className="text-sm text-muted-foreground mt-1">Anormallik tespit edilmedi.</p>}
-            </div>
-             <div>
-              <h4 className="font-semibold text-foreground">Olası Nedenler</h4>
-              <p className="text-sm text-muted-foreground mt-1 bg-secondary p-3 rounded-md">{state.causePrediction}</p>
-            </div>
-            <DialogFooter>
+        {analysisResult ? (
+          <div>
+            {renderResult()}
+             <DialogFooter>
                 <Button onClick={() => handleOpenChange(false)}>Kapat</Button>
             </DialogFooter>
           </div>
         ) : (
           <form action={passFramesToAction} ref={formRef} className="space-y-4 pt-4">
             <input type="hidden" name="feedId" value={feedId} />
+
+            <div className="flex items-center space-x-2">
+                <Label htmlFor="analysis-switch">Genel Davranış</Label>
+                <Switch 
+                    id="analysis-switch"
+                    checked={analysisType === 'mastitis'}
+                    onCheckedChange={(checked) => setAnalysisType(checked ? 'mastitis' : 'behavior')}
+                />
+                <Label htmlFor="analysis-switch">Mastitis Riski</Label>
+            </div>
             
             <div className="space-y-2">
               <Label htmlFor="video-upload">Video Klip</Label>
@@ -241,22 +348,17 @@ export function AnalysisDialog({ open, onOpenChange, location, feedId, onAnalyze
             )}
 
 
-            <div className="space-y-2">
-              <Label htmlFor="behavior-description">Beklenen Davranış</Label>
-              <Textarea
-                id="behavior-description"
-                name="behaviorDescription"
-                placeholder="Örn: Hayvanlar aktif olarak hareket ediyor, grupla etkileşimde bulunuyor ve stres belirtisi göstermiyor."
-                required
-                rows={4}
-              />
-            </div>
-
-            {state.error && (
-              <div className="flex items-center gap-x-2 text-sm text-destructive">
-                <AlertTriangle className="h-4 w-4" />
-                <p>{state.error}</p>
-              </div>
+            {analysisType === 'behavior' && (
+                <div className="space-y-2">
+                <Label htmlFor="behavior-description">Beklenen Davranış</Label>
+                <Textarea
+                    id="behavior-description"
+                    name="behaviorDescription"
+                    placeholder="Örn: Hayvanlar aktif olarak hareket ediyor, grupla etkileşimde bulunuyor ve stres belirtisi göstermiyor."
+                    required={analysisType === 'behavior'}
+                    rows={3}
+                />
+                </div>
             )}
 
             <DialogFooter>
