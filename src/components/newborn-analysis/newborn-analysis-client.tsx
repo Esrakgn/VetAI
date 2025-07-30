@@ -164,6 +164,9 @@ export function NewbornAnalysisClient() {
     return { variant: 'success', icon: ShieldCheck, label: 'Düşük Risk' };
   }
 
+  const RiskIcon = getRiskProps(analysisResult?.riskScore ?? null).icon;
+  const riskProps = getRiskProps(analysisResult?.riskScore ?? null);
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
         <div className="space-y-8">
@@ -215,9 +218,9 @@ export function NewbornAnalysisClient() {
                             
                             <div className="flex items-center space-x-2">
                                 <p className="font-semibold">Risk Durumu:</p>
-                                <Badge className={`bg-${getRiskProps(analysisResult.riskScore).variant} hover:bg-${getRiskProps(analysisResult.riskScore).variant}`}>
-                                    <svelte:component this={getRiskProps(analysisResult.riskScore).icon} className="mr-2 h-4 w-4" />
-                                    {getRiskProps(analysisResult.riskScore).label} (Skor: {analysisResult.riskScore})
+                                <Badge variant={riskProps.variant}>
+                                    <RiskIcon className="mr-2 h-4 w-4" />
+                                    {riskProps.label} (Skor: {analysisResult.riskScore})
                                 </Badge>
                             </div>
 
