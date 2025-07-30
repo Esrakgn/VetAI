@@ -1,7 +1,7 @@
 'use client';
 
 import { useFormStatus } from 'react-dom';
-import { useEffect, useState, useRef, useActionState } from 'react';
+import { useEffect, useState, useRef, useActionState, startTransition } from 'react';
 import Image from 'next/image';
 import {
   Select,
@@ -33,7 +33,6 @@ const getInitialState = () => ({
   keyFrame: null,
   evidence: null,
   error: null,
-  // Add a key to force re-rendering and state reset
   key: Date.now(), 
 });
 
@@ -64,7 +63,6 @@ export function BirthDetectionClient() {
   const formRef = useRef<HTMLFormElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [resetKey, setResetKey] = useState(Date.now());
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -135,13 +133,15 @@ export function BirthDetectionClient() {
   };
   
   const resetState = () => {
-    setResetKey(Date.now());
     setFrames([]);
     setVideoFileName('');
     setProgress(0);
     if(videoRef.current) videoRef.current.src = "";
     if(formRef.current) formRef.current.reset();
     if(fileInputRef.current) fileInputRef.current.value = "";
+    startTransition(() => {
+        formAction(new FormData()); 
+    });
   }
 
   const enhancedFormAction = (formData: FormData) => {
@@ -194,7 +194,7 @@ export function BirthDetectionClient() {
                     <CardDescription>Analiz için bir kamera seçin ve bir video klip yükleyin.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <form key={resetKey} action={enhancedFormAction} ref={formRef} className="space-y-4">
+                    <form action={enhancedFormAction} ref={formRef} className="space-y-4">
                         <input type="hidden" name="feedId" value={selectedFeed} />
                         
                         <div className="space-y-2">
