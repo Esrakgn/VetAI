@@ -4,7 +4,8 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { AnalysisDialog } from './analysis-dialog';
-import { Bot } from 'lucide-react';
+import { BirthDetectionDialog } from './birth-detection-dialog';
+import { Bot, Baby } from 'lucide-react';
 
 type VideoFeedCardProps = {
   id: string;
@@ -15,7 +16,8 @@ type VideoFeedCardProps = {
 };
 
 export function VideoFeedCard({ id, location, imageUrl, aiHint, onAnalyze }: VideoFeedCardProps) {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isAnalysisDialogOpen, setIsAnalysisDialogOpen] = useState(false);
+  const [isBirthDialogOpen, setIsBirthDialogOpen] = useState(false);
 
   return (
     <>
@@ -31,18 +33,30 @@ export function VideoFeedCard({ id, location, imageUrl, aiHint, onAnalyze }: Vid
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
         <div className="absolute bottom-0 left-0 p-4 w-full flex justify-between items-end">
           <p className="text-sm font-semibold text-primary-foreground">{location}</p>
-          <Button size="sm" onClick={() => setIsDialogOpen(true)} className="bg-accent text-accent-foreground hover:bg-accent/90">
-            <Bot className="mr-2 h-4 w-4" />
-            Analiz Et
-          </Button>
+          <div className="flex gap-2">
+            <Button size="sm" onClick={() => setIsBirthDialogOpen(true)} className="bg-pink-500 text-white hover:bg-pink-600">
+              <Baby className="mr-2 h-4 w-4" />
+              Doğum Tespiti
+            </Button>
+            <Button size="sm" onClick={() => setIsAnalysisDialogOpen(true)} className="bg-accent text-accent-foreground hover:bg-accent/90">
+              <Bot className="mr-2 h-4 w-4" />
+              Analiz Et
+            </Button>
+          </div>
         </div>
       </div>
       <AnalysisDialog
-        open={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
+        open={isAnalysisDialogOpen}
+        onOpenChange={setIsAnalysisDialogOpen}
         location={location}
         feedId={id}
         onAnalyze={onAnalyze}
+      />
+      <BirthDetectionDialog
+        open={isBirthDialogOpen}
+        onOpenChange={setIsBirthDialogOpen}
+        location={location}
+        feedId={id}
       />
     </>
   );

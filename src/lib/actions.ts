@@ -5,6 +5,8 @@ import { analyzeBehavior } from '@/ai/flows/analyze-behavior';
 import { predictAnomalyCause } from '@/ai/flows/predict-anomaly-cause';
 import { diagnoseDisease } from '@/ai/flows/diagnose-disease';
 import { generateAdvice } from '@/ai/flows/generate-advice';
+import { detectBirth } from '@/ai/flows/detect-birth';
+
 
 // Schema for analyzeBehavior form
 const AnalyzeSchema = z.object({
@@ -184,4 +186,54 @@ export async function handleGenerateAdvice(prevState: AdviceState, formData: For
             error: e.message || 'Tavsiye oluşturulurken bilinmeyen bir hata oluştu.',
         };
     }
+}
+
+
+// Schema for detectBirth form
+const BirthSchema = z.object({
+  frames: z.array(z.string()).min(1, 'At least one video frame is required.'),
+  feedId: z.string(),
+});
+
+type BirthState = {
+  isBirthDetected: boolean | null;
+  estimatedBirthTime: string | null;
+  keyFrame: string | null;
+  evidence: string | null;
+  error: string | null;
+};
+
+export async function handleDetectBirth(prevState: BirthState, formData: FormData): Promise<BirthState> {
+  const frameEntries = formData.getAll('frames') as string[];
+
+  const validatedFields = BirthSchema.safeParse({
+    frames: frameEntries,
+    feedId: formData.get('feedId'),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      isBirthDetected: null,
+      estimatedBirthTime: null,
+      keyFrame: null,
+      evidence: null,
+      error: validatedFields.error.flatten().fieldErrors.frames?.[0] || 'Invalid input.',
+    };
+  }
+
+  try {
+    const result = await detectBirth(validatedFields.data);
+    return {
+      ...result,
+      error: null,
+    };
+  } catch (e: any) {
+    return {
+      isBirthDetected: null,
+      estimatedBirthTime: null,
+      keyFrame: null,
+      evidence: null,
+      error: e.message || 'An unknown error occurred during birth detection.',
+    };
+  }
 }
