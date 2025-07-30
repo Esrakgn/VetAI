@@ -1,7 +1,6 @@
 'use client';
 
-import { useFormStatus } from 'react-dom';
-import { useEffect, useState, useRef, useActionState, startTransition } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import {
   Select,
@@ -14,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { handleDetectBirth } from '@/lib/actions';
+import { handleDetectBirth, type BirthState } from '@/lib/actions';
 import { Loader2, AlertTriangle, FileVideo, CheckCircle, Video, PartyPopper, XCircle, Camera } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { Progress } from '@/components/ui/progress';
@@ -27,34 +26,19 @@ const cameraFeeds = [
   { id: 'common-area', location: 'Ortak Alan' },
 ];
 
-const getInitialState = () => ({
+const initialState: BirthState = {
   isBirthDetected: null,
   estimatedBirthTime: null,
   keyFrame: null,
   evidence: null,
   error: null,
-  key: Date.now(), 
-});
+};
 
-function SubmitButton({ framesCaptured }: { framesCaptured: boolean }) {
-  const { pending } = useFormStatus();
-  return (
-    <Button type="submit" disabled={pending || !framesCaptured} className="w-full">
-      {pending ? (
-        <>
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Tespit Ediliyor...
-        </>
-      ) : (
-        'Doğumu Tespit Et'
-      )}
-    </Button>
-  );
-}
 
 export function BirthDetectionClient() {
   const { toast } = useToast();
-  const [state, formAction] = useActionState(handleDetectBirth, getInitialState());
+  const [state, setState] = useState<BirthState>(initialState);
+  const [isPending, setIsPending] = useState(false);
   
   const [frames, setFrames] = useState<string[]>([]);
   const [videoFileName, setVideoFileName] = useState('');
@@ -126,8 +110,7 @@ export function BirthDetectionClient() {
        video.currentTime = 0.1;
     };
     
-    // Handle case where video is already loaded
-    if (video.readyState >= 2) { // HAVE_CURRENT_DATA
+    if (video.readyState >= 2) { 
         video.currentTime = 0.1;
     }
   };
@@ -139,13 +122,12 @@ export function BirthDetectionClient() {
     if(videoRef.current) videoRef.current.src = "";
     if(formRef.current) formRef.current.reset();
     if(fileInputRef.current) fileInputRef.current.value = "";
-    startTransition(() => {
-        formAction(new FormData()); 
-    });
+    setState(initialState);
   }
 
-  const enhancedFormAction = (formData: FormData) => {
-    if (frames.length === 0 && !formData.has('frames')) {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (frames.length === 0) {
        toast({
         variant: 'destructive',
         title: 'Kareler eksik',
@@ -153,15 +135,20 @@ export function BirthDetectionClient() {
       });
       return;
     }
+    
+    setIsPending(true);
+    const formData = new FormData(event.currentTarget);
     frames.forEach((frame) => {
       formData.append(`frames`, frame);
     });
 
-    formAction(formData);
+    const result = await handleDetectBirth(formData);
+    setState(result);
+    setIsPending(false);
   }
 
   useEffect(() => {
-    if (!state || !state.key || state.key === getInitialState().key) return; // Don't run on initial state
+    if (!state || !state.evidence) return; // Don't run on initial state
 
     if (state.error) {
       toast({
@@ -194,7 +181,7 @@ export function BirthDetectionClient() {
                     <CardDescription>Analiz için bir kamera seçin ve bir video klip yükleyin.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <form action={enhancedFormAction} ref={formRef} className="space-y-4">
+                    <form onSubmit={handleSubmit} ref={formRef} className="space-y-4">
                         <input type="hidden" name="feedId" value={selectedFeed} />
                         
                         <div className="space-y-2">
@@ -214,7 +201,6 @@ export function BirthDetectionClient() {
                             </Select>
                         </div>
                         
-
                         {selectedFeed && (
                             <>
                                 <div className="space-y-2">
@@ -246,7 +232,16 @@ export function BirthDetectionClient() {
                                     <p>{state.error}</p>
                                 </div>
                                 )}
-                                <SubmitButton framesCaptured={frames.length > 0} />
+                                <Button type="submit" disabled={isPending || frames.length === 0} className="w-full">
+                                  {isPending ? (
+                                    <>
+                                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                      Tespit Ediliyor...
+                                    </>
+                                  ) : (
+                                    'Doğumu Tespit Et'
+                                  )}
+                                </Button>
                             </>
                         )}
                     </form>

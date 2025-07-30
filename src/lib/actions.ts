@@ -144,53 +144,49 @@ export async function handleGenerateAdvice(prevState: AdviceState, formData: For
 
 // Schema for detectBirth form
 const BirthSchema = z.object({
-  frames: z.array(z.string()).optional(),
-  feedId: z.string().optional(),
+  frames: z.array(z.string()).min(1, "En az bir video karesi gereklidir."),
+  feedId: z.string(),
 });
 
-type BirthState = {
+export type BirthState = {
   isBirthDetected: boolean | null;
   estimatedBirthTime: string | null;
   keyFrame: string | null;
   evidence: string | null;
   error: string | null;
-  key: number;
 };
 
-export async function handleDetectBirth(prevState: BirthState, formData: FormData): Promise<BirthState> {
+export async function handleDetectBirth(formData: FormData): Promise<BirthState> {
   const frameEntries = formData.getAll('frames') as string[];
-  const feedId = formData.get('feedId') as string;
-
-  // This is a reset action if frames are not provided
-  if (frameEntries.length === 0) {
-    return { ...prevState, isBirthDetected: null, evidence: null, keyFrame: null, error: null, key: Date.now() };
-  }
 
   const validatedFields = BirthSchema.safeParse({
     frames: frameEntries,
-    feedId: feedId,
+    feedId: formData.get('feedId'),
   });
 
   if (!validatedFields.success) {
     return {
-      ...prevState,
-      error: validatedFields.error.flatten().fieldErrors.frames?.[0] || 'Invalid input.',
-      key: Date.now(),
+      isBirthDetected: null,
+      estimatedBirthTime: null,
+      keyFrame: null,
+      evidence: null,
+      error: validatedFields.error.flatten().fieldErrors.frames?.[0] || 'Geçersiz girdi.',
     };
   }
 
   try {
-    const result = await detectBirth({ frames: frameEntries });
+    const result = await detectBirth({ frames: validatedFields.data.frames });
     return {
       ...result,
       error: null,
-      key: Date.now(),
     };
   } catch (e: any) {
     return {
-      ...prevState,
-      error: e.message || 'An unknown error occurred during birth detection.',
-      key: Date.now(),
+      isBirthDetected: null,
+      estimatedBirthTime: null,
+      keyFrame: null,
+      evidence: null,
+      error: e.message || 'Doğum tespiti sırasında bilinmeyen bir hata oluştu.',
     };
   }
 }
