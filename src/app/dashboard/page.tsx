@@ -45,7 +45,7 @@ export default function DashboardPage() {
 
   const addAlert = (location: string, anomaly: string) => {
     const newAlert: Alert = {
-      id: alerts.length + 1,
+      id: Date.now() + alerts.length, // Use a more unique ID
       animalId: `Konum: ${location}`,
       description: anomaly,
       timestamp: 'Şimdi',
