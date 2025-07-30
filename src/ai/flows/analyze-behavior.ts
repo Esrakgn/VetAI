@@ -51,7 +51,7 @@ const analyzeBehaviorPrompt = ai.definePrompt({
 
   Neden Tahmini:
   - Gözlemlenen anormallikler için olası nedenlerin sıralı bir listesini sağlayın.
-  - Hastalık, stres ve yaralanma gibi faktörleri göz önünde bulundurun.
+  - Koyunların koşması, bir yırtıcı veya yüksek bir sesten kaynaklanan stres veya korku nedeniyle olabilir.
 `,
 });
 
