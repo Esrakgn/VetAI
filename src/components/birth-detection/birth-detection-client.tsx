@@ -64,6 +64,7 @@ export function BirthDetectionClient() {
   const formRef = useRef<HTMLFormElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [resetKey, setResetKey] = useState(Date.now());
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -134,18 +135,13 @@ export function BirthDetectionClient() {
   };
   
   const resetState = () => {
-    formRef.current?.reset();
-    if(fileInputRef.current) fileInputRef.current.value = "";
+    setResetKey(Date.now());
     setFrames([]);
     setVideoFileName('');
     setProgress(0);
     if(videoRef.current) videoRef.current.src = "";
-    // This is the correct way to trigger a reset with useActionState
-    // by re-invoking the initializer. We can't call formAction directly here.
-    // A simple way to signal a reset is to have a parent component re-render this one with a new key.
-    // Or, handle state reset more manually. Since formAction is now tied to useActionState,
-    // we will create a new `initialState` to reset it.
-    formAction(new FormData()); // Pass empty form data to reset
+    if(formRef.current) formRef.current.reset();
+    if(fileInputRef.current) fileInputRef.current.value = "";
   }
 
   const enhancedFormAction = (formData: FormData) => {
@@ -165,7 +161,7 @@ export function BirthDetectionClient() {
   }
 
   useEffect(() => {
-    if (!state || !state.key) return; // Don't run on initial state
+    if (!state || !state.key || state.key === getInitialState().key) return; // Don't run on initial state
 
     if (state.error) {
       toast({
@@ -198,7 +194,7 @@ export function BirthDetectionClient() {
                     <CardDescription>Analiz için bir kamera seçin ve bir video klip yükleyin.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <form action={enhancedFormAction} ref={formRef} className="space-y-4">
+                    <form key={resetKey} action={enhancedFormAction} ref={formRef} className="space-y-4">
                         <input type="hidden" name="feedId" value={selectedFeed} />
                         
                         <div className="space-y-2">
