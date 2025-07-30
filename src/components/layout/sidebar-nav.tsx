@@ -12,7 +12,6 @@ const menuItems = [
   { path: '/birth-detection', label: 'Doğum Tespiti', icon: Baby },
   { path: '/newborn-analysis', label: 'Yeni Doğan Analizi', icon: HeartPulse },
   { path: '/assistance', label: 'Yardım Merkezi', icon: MessageCircle },
-  { path: '/predictor', label: 'Neden Tahmini', icon: Lightbulb },
   { path: '/analysis', label: 'Analiz', icon: AreaChart },
   { path: '/history', label: 'Geçmiş Kayıtlar', icon: History },
   { path: '/settings', label: 'Ayarlar', icon: Settings },

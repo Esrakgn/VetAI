@@ -2,7 +2,6 @@
 
 import { z } from 'zod';
 import { analyzeBehavior } from '@/ai/flows/analyze-behavior';
-import { predictAnomalyCause } from '@/ai/flows/predict-anomaly-cause';
 import { diagnoseDisease } from '@/ai/flows/diagnose-disease';
 import { generateAdvice } from '@/ai/flows/generate-advice';
 import { detectBirth } from '@/ai/flows/detect-birth';
@@ -56,50 +55,6 @@ export async function handleAnalyzeBehavior(prevState: AnalyzeState, formData: F
   }
 }
 
-
-// Schema for predictAnomalyCause form
-const PredictSchema = z.object({
-    animalId: z.string().min(1, 'Hayvan ID\'si gerekli.'),
-    observedBehavior: z.string().min(10, 'Gözlenen davranış açıklaması çok kısa.'),
-    historicalData: z.string().optional(),
-});
-
-type PredictState = {
-    probableCauses: string[] | null;
-    error: string | null;
-}
-
-export async function handlePredictCause(prevState: PredictState, formData: FormData): Promise<PredictState> {
-    const validatedFields = PredictSchema.safeParse({
-        animalId: formData.get('animalId'),
-        observedBehavior: formData.get('observedBehavior'),
-        historicalData: formData.get('historicalData'),
-    });
-
-    if (!validatedFields.success) {
-        return {
-            probableCauses: null,
-            error: validatedFields.error.flatten().fieldErrors.animalId?.[0] || validatedFields.error.flatten().fieldErrors.observedBehavior?.[0] || 'Geçersiz girdi.',
-        };
-    }
-
-    try {
-        const result = await predictAnomalyCause({
-          ...validatedFields.data,
-          // Provide a default empty string if historicalData is undefined
-          historicalData: validatedFields.data.historicalData || '', 
-        });
-        return {
-            probableCauses: result.probableCauses,
-            error: null,
-        };
-    } catch (e: any) {
-        return {
-            probableCauses: null,
-            error: e.message || 'Tahmin sırasında bilinmeyen bir hata oluştu.',
-        };
-    }
-}
 
 // Schema for diagnoseDisease form
 const DiagnoseSchema = z.object({
