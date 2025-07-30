@@ -1,34 +1,52 @@
-import { cn } from '@/lib/utils';
+import React from 'react';
 
-const CustomLogoIcon = (props: React.SVGProps<SVGSVGElement>) => (
+interface CustomLogoIconProps {
+  width?: number;
+  height?: number;
+  color?: string;
+}
+
+const CustomLogoIcon: React.FC<CustomLogoIconProps> = ({
+  width = 32,
+  height = 32,
+  color = '#4ade80',
+}) => (
   <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
+    width={width}
+    height={height}
+    viewBox="0 0 32 32"
     fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    {...props}
+    xmlns="http://www.w3.org/2000/svg"
   >
-    <path d="M11 4H9C7.89543 4 7 4.89543 7 6V7" />
-    <path d="M15 4H17C18.1046 4 19 4.89543 19 6V7" />
-    <path d="M7 14V12C7 10.8954 7.89543 10 9 10H17C18.1046 10 19 10.8954 19 12V14" />
-    <path d="M10 18H16" />
-    <path d="M13 15V21" />
-    <path d="M18 18H22" />
-    <path d="M20 16V20" />
+    <path
+      d="M10 6C10 4.89543 10.8954 4 12 4H20C21.1046 4 22 4.89543 22 6V10C22 11.1046 21.1046 12 20 12H12C10.8954 12 10 11.1046 10 10V6Z"
+      stroke={color}
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M16 12V28M16 28L12 24M16 28L20 24"
+      stroke={color}
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M26 10H30"
+      stroke={color}
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M28 8V12"
+      stroke={color}
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </svg>
 );
 
-
-export function Logo({ className }: { className?: string }) {
-  return (
-    <div className={cn('flex items-center gap-2', className)}>
-      <div className="p-1.5 bg-primary rounded-lg">
-        <CustomLogoIcon className="h-7 w-7 text-primary-foreground" />
-      </div>
-      <span className="text-2xl font-bold font-headline text-foreground">VetAI</span>
-    </div>
-  );
-}
+export default CustomLogoIcon;

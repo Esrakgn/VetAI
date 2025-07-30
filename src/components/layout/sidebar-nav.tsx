@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { AreaChart, History, LayoutDashboard, Settings, Stethoscope, Lightbulb, MessageCircle } from 'lucide-react';
 import { Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from '@/components/ui/sidebar';
-import { Logo } from '@/components/logo';
+import Logo from '@/components/logo';
 
 const menuItems = [
   { path: '/dashboard', label: 'Kontrol Paneli', icon: LayoutDashboard },
