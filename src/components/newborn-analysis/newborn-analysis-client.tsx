@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { handleAnalyzeNewborn } from '@/lib/actions';
-import { Loader2, FileVideo, Video, CheckCircle, Activity, ShieldAlert, ShieldCheck } from 'lucide-react';
+import { Loader2, FileVideo, Video, CheckCircle, Activity, ShieldAlert, ShieldCheck, Lightbulb } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '../ui/badge';
@@ -204,6 +204,15 @@ export function NewbornAnalysisClient() {
                     </form>
                 </CardContent>
             </Card>
+            <Alert className="border-primary/50">
+                <Lightbulb className="h-4 w-4" />
+                <AlertTitle className="font-semibold">Unutmayın: İlk 24 Saat Kritik Öneme Sahiptir</AlertTitle>
+                <AlertDescription>
+                <p className="mt-2 text-sm text-muted-foreground">
+                    Yeni doğan bir hayvanın hayatta kalma ve sağlıklı bir şekilde gelişme şansı, büyük ölçüde doğumdan sonraki ilk 24 saat içindeki bakım ve gözleme bağlıdır. Bu dönemde emme refleksi, hareketlilik ve genel canlılık gibi belirtiler, hayvanın sağlık durumu hakkında önemli ipuçları verir. Bu analiz aracı, bu kritik periyodu dikkatle izlemenize ve olası riskleri erken fark etmenize yardımcı olmak için tasarlanmıştır.
+                </p>
+                </AlertDescription>
+            </Alert>
         </div>
         <div>
             <Card>
