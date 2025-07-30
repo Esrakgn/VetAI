@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { handleDetectBirth } from '@/lib/actions';
-import { Loader2, AlertTriangle, FileVideo, CheckCircle, Video, PartyPopper, XCircle, Camera, Wand2 } from 'lucide-react';
+import { Loader2, AlertTriangle, FileVideo, CheckCircle, Video, PartyPopper, XCircle, Camera } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '../ui/badge';
@@ -61,7 +61,6 @@ export function BirthDetectionClient() {
   const [videoFileName, setVideoFileName] = useState('');
   const [progress, setProgress] = useState(0);
   const [selectedFeed, setSelectedFeed] = useState<string>('');
-  const [isSimulation, setIsSimulation] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -139,24 +138,7 @@ export function BirthDetectionClient() {
     setProgress(0);
     if(videoRef.current) videoRef.current.src = "";
     setAnalysisResult(null);
-    setIsSimulation(false);
   }
-  
-  const runSimulation = () => {
-    resetState();
-    setIsSimulation(true);
-    setSelectedFeed('nursery-1'); // Default feed for simulation
-    // Simulate capturing frames for a "birth" event
-    const placeholderFrames = [
-        "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEADASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAn/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFAEBAAAAAAAAAAAAAAAAAAAAAP/EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhEDEQA/AL+AD//Z",
-    ];
-    setFrames(placeholderFrames);
-    setProgress(100);
-    toast({
-      title: 'Simülasyon Başlatıldı',
-      description: 'Doğum senaryosu için örnek veriler yüklendi. Analizi başlatabilirsiniz.',
-    });
-  };
 
   const passFramesToAction = async (formData: FormData) => {
     if (frames.length === 0) {
@@ -206,74 +188,55 @@ export function BirthDetectionClient() {
             <Card>
                 <CardHeader>
                     <CardTitle>Kontrol Paneli</CardTitle>
-                    <CardDescription>Analiz için bir kamera seçin, video yükleyin veya simülasyonu çalıştırın.</CardDescription>
+                    <CardDescription>Analiz için bir kamera seçin ve bir video klip yükleyin.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <form action={passFramesToAction} ref={formRef} className="space-y-4">
                         <input type="hidden" name="feedId" value={selectedFeed} />
                         
-                        <div className="flex gap-2">
-                            <div className="space-y-2 flex-grow">
-                               <Label htmlFor="camera-select">Kamera Akışı</Label>
-                                <Select onValueChange={(value) => {
-                                    resetState();
-                                    setSelectedFeed(value);
-                                }} value={selectedFeed} required disabled={isSimulation}>
-                                    <SelectTrigger id="camera-select">
-                                        <SelectValue placeholder="Bir kamera seçin..." />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {cameraFeeds.map(feed => (
-                                            <SelectItem key={feed.id} value={feed.id}>{feed.location}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <Label>&nbsp;</Label>
-                                <Button type="button" variant="outline" onClick={runSimulation}>
-                                    <Wand2 className="mr-2"/>
-                                    Simülasyon
-                                </Button>
-                            </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="camera-select">Kamera Akışı</Label>
+                            <Select onValueChange={(value) => {
+                                resetState();
+                                setSelectedFeed(value);
+                            }} value={selectedFeed} required>
+                                <SelectTrigger id="camera-select">
+                                    <SelectValue placeholder="Bir kamera seçin..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {cameraFeeds.map(feed => (
+                                        <SelectItem key={feed.id} value={feed.id}>{feed.location}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
+                        
 
-                        {(selectedFeed || isSimulation) && (
+                        {selectedFeed && (
                             <>
-                                {!isSimulation && (
-                                    <>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="video-upload-birth">Video Klip</Label>
-                                            <Input id="video-upload-birth" type="file" accept="video/*" onChange={handleFileChange} required />
-                                            {videoFileName && (
-                                                <div className="text-xs text-muted-foreground flex items-center gap-2 pt-1">
-                                                <FileVideo className="h-4 w-4" />
-                                                <span>{videoFileName}</span>
-                                                </div>
-                                            )}
+                                <div className="space-y-2">
+                                    <Label htmlFor="video-upload-birth">Video Klip</Label>
+                                    <Input id="video-upload-birth" type="file" accept="video/*" onChange={handleFileChange} required />
+                                    {videoFileName && (
+                                        <div className="text-xs text-muted-foreground flex items-center gap-2 pt-1">
+                                        <FileVideo className="h-4 w-4" />
+                                        <span>{videoFileName}</span>
                                         </div>
+                                    )}
+                                </div>
 
-                                        {videoFileName && (
-                                            <div className="space-y-3">
-                                                <video ref={videoRef} className="w-full rounded-md bg-black" controls muted />
-                                                <Button type="button" variant="secondary" onClick={captureFrames} disabled={progress > 0 && progress < 100}>
-                                                    <Video className="mr-2"/>
-                                                    Kareleri Yakala
-                                                </Button>
-                                                {progress > 0 && <Progress value={progress} className="w-full" />}
-                                                {frames.length > 0 && <p className="text-sm text-success">{frames.length} kare başarıyla yakalandı.</p>}
-                                            </div>
-                                        )}
-                                    </>
+                                {videoFileName && (
+                                    <div className="space-y-3">
+                                        <video ref={videoRef} className="w-full rounded-md bg-black" controls muted />
+                                        <Button type="button" variant="secondary" onClick={captureFrames} disabled={progress > 0 && progress < 100}>
+                                            <Video className="mr-2"/>
+                                            Kareleri Yakala
+                                        </Button>
+                                        {progress > 0 && <Progress value={progress} className="w-full" />}
+                                        {frames.length > 0 && <p className="text-sm text-success">{frames.length} kare başarıyla yakalandı.</p>}
+                                    </div>
                                 )}
                                 
-                                {isSimulation && (
-                                     <div className="p-4 bg-secondary rounded-md text-sm text-secondary-foreground">
-                                        <p>Simülasyon modu aktif. Örnek doğum verileri kullanılarak analiz yapılacaktır. "Doğumu Tespit Et" butonuna tıklayarak devam edebilirsiniz.</p>
-                                     </div>
-                                )}
-                                
-
                                 {analysisResult?.error && (
                                 <div className="flex items-center gap-x-2 text-sm text-destructive">
                                     <AlertTriangle className="h-4 w-4" />
@@ -345,7 +308,7 @@ export function BirthDetectionClient() {
                          <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
                             <Camera className="w-12 h-12 mb-4" />
                             <p>Henüz bir analiz yapılmadı.</p>
-                            <p className="text-sm">Lütfen bir kamera seçip videoyu analiz edin veya bir simülasyon çalıştırın.</p>
+                            <p className="text-sm">Lütfen bir kamera seçip videoyu analiz edin.</p>
                          </div>
                     )}
                 </CardContent>
