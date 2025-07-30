@@ -1,7 +1,7 @@
 'use client';
 
 import { useFormStatus } from 'react-dom';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useActionState } from 'react';
 import Image from 'next/image';
 import {
   Select,
@@ -35,9 +35,6 @@ const initialState = {
   error: null,
 };
 
-type AnalysisResult = typeof initialState;
-
-
 function SubmitButton({ framesCaptured }: { framesCaptured: boolean }) {
   const { pending } = useFormStatus();
   return (
@@ -56,13 +53,16 @@ function SubmitButton({ framesCaptured }: { framesCaptured: boolean }) {
 
 export function BirthDetectionClient() {
   const { toast } = useToast();
-  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
+  const [state, formAction] = useActionState(handleDetectBirth, initialState);
+  
   const [frames, setFrames] = useState<string[]>([]);
+  const framesRef = useRef<string[]>([]);
   const [videoFileName, setVideoFileName] = useState('');
   const [progress, setProgress] = useState(0);
   const [selectedFeed, setSelectedFeed] = useState<string>('');
   const formRef = useRef<HTMLFormElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -101,9 +101,10 @@ export function BirthDetectionClient() {
     canvas.height = video.videoHeight;
     let framesCaptured = 0;
 
-    const captureFrame = () => {
+    const doCaptureFrame = () => {
       if (framesCaptured >= frameCount) {
         setFrames(capturedFrames);
+        framesRef.current = capturedFrames;
         setProgress(100);
         return;
       }
@@ -119,66 +120,68 @@ export function BirthDetectionClient() {
       framesCaptured++;
       const newProgress = (framesCaptured / frameCount) * 100;
       setProgress(newProgress);
-      captureFrame();
+      doCaptureFrame();
     };
 
     video.onloadeddata = () => {
-      captureFrame();
+       video.currentTime = 0.1;
     };
-
-    if (video.readyState >= 2) {
-      captureFrame();
+    
+    // Handle case where video is already loaded
+    if (video.readyState >= 2) { // HAVE_CURRENT_DATA
+        video.currentTime = 0.1;
     }
   };
   
   const resetState = () => {
     formRef.current?.reset();
+    if(fileInputRef.current) fileInputRef.current.value = "";
     setFrames([]);
+    framesRef.current = [];
     setVideoFileName('');
     setProgress(0);
     if(videoRef.current) videoRef.current.src = "";
-    setAnalysisResult(null);
+    formAction(initialState as any);
   }
 
-  const passFramesToAction = async (formData: FormData) => {
-    if (frames.length === 0) {
-      toast({
+  const enhancedFormAction = (formData: FormData) => {
+    if (framesRef.current.length === 0) {
+       toast({
         variant: 'destructive',
         title: 'Kareler eksik',
         description: 'Lütfen analizden önce videodan kareleri yakalayın.',
       });
       return;
     }
-    frames.forEach((frame) => {
+    framesRef.current.forEach((frame) => {
       formData.append(`frames`, frame);
     });
 
-    const result = await handleDetectBirth(initialState, formData);
-    setAnalysisResult(result);
-  };
+    formAction(formData);
+  }
 
   useEffect(() => {
-    if (!analysisResult) return;
+    if (!state) return;
 
-    if (analysisResult.error) {
+    if (state.error) {
       toast({
         variant: 'destructive',
         title: 'Tespit Başarısız',
-        description: analysisResult.error,
+        description: state.error,
       });
-    } else if (analysisResult.isBirthDetected) {
+    } else if (state.isBirthDetected) {
       toast({
         className: 'bg-success text-success-foreground',
         title: 'Doğum Tespit Edildi!',
         description: `Konum: ${selectedFeed}. Detaylar için sonucu inceleyin.`,
       });
-    } else if (analysisResult.isBirthDetected === false) {
+    } else if (state.isBirthDetected === false) {
       toast({
         title: 'Analiz Tamamlandı',
         description: `Doğum tespit edilmedi.`,
       });
     }
-  }, [analysisResult, toast, selectedFeed]);
+  }, [state, toast, selectedFeed]);
   
   const selectedLocation = cameraFeeds.find(f => f.id === selectedFeed)?.location || 'Bilinmeyen Konum';
 
@@ -191,7 +194,7 @@ export function BirthDetectionClient() {
                     <CardDescription>Analiz için bir kamera seçin ve bir video klip yükleyin.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <form action={passFramesToAction} ref={formRef} className="space-y-4">
+                    <form action={enhancedFormAction} ref={formRef} className="space-y-4">
                         <input type="hidden" name="feedId" value={selectedFeed} />
                         
                         <div className="space-y-2">
@@ -216,7 +219,7 @@ export function BirthDetectionClient() {
                             <>
                                 <div className="space-y-2">
                                     <Label htmlFor="video-upload-birth">Video Klip</Label>
-                                    <Input id="video-upload-birth" type="file" accept="video/*" onChange={handleFileChange} required />
+                                    <Input ref={fileInputRef} id="video-upload-birth" type="file" accept="video/*" onChange={handleFileChange} required />
                                     {videoFileName && (
                                         <div className="text-xs text-muted-foreground flex items-center gap-2 pt-1">
                                         <FileVideo className="h-4 w-4" />
@@ -227,7 +230,7 @@ export function BirthDetectionClient() {
 
                                 {videoFileName && (
                                     <div className="space-y-3">
-                                        <video ref={videoRef} className="w-full rounded-md bg-black" controls muted />
+                                        <video ref={videoRef} className="w-full rounded-md bg-black" controls muted playsInline />
                                         <Button type="button" variant="secondary" onClick={captureFrames} disabled={progress > 0 && progress < 100}>
                                             <Video className="mr-2"/>
                                             Kareleri Yakala
@@ -237,10 +240,10 @@ export function BirthDetectionClient() {
                                     </div>
                                 )}
                                 
-                                {analysisResult?.error && (
+                                {state?.error && (
                                 <div className="flex items-center gap-x-2 text-sm text-destructive">
                                     <AlertTriangle className="h-4 w-4" />
-                                    <p>{analysisResult.error}</p>
+                                    <p>{state.error}</p>
                                 </div>
                                 )}
                                 <SubmitButton framesCaptured={frames.length > 0} />
@@ -257,7 +260,7 @@ export function BirthDetectionClient() {
                     <CardDescription>Doğum tespiti analizinin sonuçları burada görünecektir.</CardDescription>
                 </CardHeader>
                 <CardContent className="min-h-[400px]">
-                    {analysisResult?.evidence ? (
+                    {state?.evidence ? (
                         <div className="space-y-4">
                         <h3 className="text-lg font-semibold flex items-center text-primary"><CheckCircle className="mr-2 h-5 w-5" />Tespit Tamamlandı</h3>
                         
@@ -268,7 +271,7 @@ export function BirthDetectionClient() {
 
                         <div className="flex items-center space-x-2">
                             <p className="font-semibold">Sonuç:</p>
-                            {analysisResult.isBirthDetected ? (
+                            {state.isBirthDetected ? (
                             <Badge className="bg-success hover:bg-success">
                                 <PartyPopper className="mr-2 h-4 w-4" />
                                 Doğum Tespit Edildi
@@ -281,23 +284,23 @@ export function BirthDetectionClient() {
                             )}
                         </div>
 
-                        {analysisResult.isBirthDetected && (
+                        {state.isBirthDetected && (
                             <div>
                                 <h4 className="font-semibold text-foreground">Tahmini Doğum Zamanı</h4>
-                                <p className="text-sm text-muted-foreground mt-1 bg-secondary p-3 rounded-md">{analysisResult.estimatedBirthTime}</p>
+                                <p className="text-sm text-muted-foreground mt-1 bg-secondary p-3 rounded-md">{state.estimatedBirthTime}</p>
                             </div>
                         )}
                         
                         <div>
                             <h4 className="font-semibold text-foreground">Kanıt</h4>
-                            <p className="text-sm text-muted-foreground mt-1 bg-secondary p-3 rounded-md">{analysisResult.evidence}</p>
+                            <p className="text-sm text-muted-foreground mt-1 bg-secondary p-3 rounded-md">{state.evidence}</p>
                         </div>
 
-                        {analysisResult.keyFrame && (
+                        {state.keyFrame && (
                             <div>
                             <h4 className="font-semibold text-foreground">Ekran Görüntüsü</h4>
                             <div className="mt-2 relative border rounded-md p-2">
-                                <Image src={analysisResult.keyFrame} alt="Doğum kanıtı" width={600} height={400} className="w-full h-auto rounded-md" />
+                                <Image src={state.keyFrame} alt="Doğum kanıtı" width={600} height={400} className="w-full h-auto rounded-md" />
                             </div>
                             </div>
                         )}
