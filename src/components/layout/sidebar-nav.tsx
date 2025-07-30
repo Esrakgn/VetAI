@@ -23,7 +23,10 @@ export function SidebarNav() {
   return (
     <Sidebar>
       <SidebarHeader>
-        <Logo />
+        <div className="flex items-center gap-2">
+          <Logo />
+          <span className="font-bold text-lg group-data-[collapsible=icon]:hidden">VetAI</span>
+        </div>
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu>
