@@ -11,11 +11,13 @@ const CustomLogoIcon = (props: React.SVGProps<SVGSVGElement>) => (
     strokeLinejoin="round"
     {...props}
   >
-    <path d="M14.5 9.5c-1.2 0-2.5 1-2.5 2.5s1.3 2.5 2.5 2.5" />
-    <path d="M9.5 9.5c1.2 0 2.5 1 2.5 2.5s-1.3 2.5-2.5 2.5" />
-    <path d="M12 14.5c-1.5 0-3-1-3-2.5s1.5-2.5 3-2.5" />
-    <path d="M12 2a10 10 0 00-7.5 16.8V22h15v-3.2A10 10 0 0012 2z" />
-    <path d="M17 14h-2v-2h-2v2h-2v2h2v2h2v-2h2z" />
+    <path d="M11 4H9C7.89543 4 7 4.89543 7 6V7" />
+    <path d="M15 4H17C18.1046 4 19 4.89543 19 6V7" />
+    <path d="M7 14V12C7 10.8954 7.89543 10 9 10H17C18.1046 10 19 10.8954 19 12V14" />
+    <path d="M10 18H16" />
+    <path d="M13 15V21" />
+    <path d="M18 18H22" />
+    <path d="M20 16V20" />
   </svg>
 );
 
