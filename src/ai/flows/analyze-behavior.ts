@@ -23,7 +23,6 @@ export type AnalyzeBehaviorInput = z.infer<typeof AnalyzeBehaviorInputSchema>;
 
 const AnalyzeBehaviorOutputSchema = z.object({
   anomalies: z.array(z.string()).describe('Tespit edilen anormal davranışların bir listesi.'),
-  causePrediction: z.string().describe('Gözlemlenen anormallikler için olası nedenlerin sıralı bir listesi.'),
 });
 export type AnalyzeBehaviorOutput = z.infer<typeof AnalyzeBehaviorOutputSchema>;
 
@@ -38,7 +37,7 @@ const analyzeBehaviorPrompt = ai.definePrompt({
   prompt: `Hayvan davranışlarını video akışlarında analiz eden bir yapay zeka asistanısınız.
 
   Bir videodan bir dizi kare ve beklenen davranışın bir açıklamasını alacaksınız.
-  Göreviniz, karelerde gösterilen anormal davranışları belirlemek ve olası nedenlerini tahmin etmektir.
+  Göreviniz, karelerde gösterilen anormal davranışları belirlemektir.
   
   {{#each frames}}
   Kare: {{media url=this}}
@@ -48,10 +47,6 @@ const analyzeBehaviorPrompt = ai.definePrompt({
 
   Anormallikler:
   - Video karelerinde gözlemlenen olağandışı davranışları listeleyin.
-
-  Neden Tahmini:
-  - Gözlemlenen anormallikler için olası nedenlerin sıralı bir listesini sağlayın.
-  - Koyunların koşması, bir yırtıcı veya yüksek bir sesten kaynaklanan stres veya korku nedeniyle olabilir.
 `,
 });
 

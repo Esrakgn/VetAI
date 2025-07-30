@@ -32,7 +32,6 @@ type AnalysisDialogProps = {
 
 const initialBehaviorState = {
   anomalies: null,
-  causePrediction: null,
   error: null,
 };
 
@@ -245,10 +244,6 @@ export function AnalysisDialog({ open, onOpenChange, location, feedId, onAnalyze
                   {analysisResult.anomalies.map((anomaly, index) => <li key={index}>{anomaly}</li>)}
                 </ul>
               ) : <p className="text-sm text-muted-foreground mt-1">Anormallik tespit edilmedi.</p>}
-            </div>
-             <div>
-              <h4 className="font-semibold text-foreground">Olası Nedenler</h4>
-              <p className="text-sm text-muted-foreground mt-1 bg-secondary p-3 rounded-md">{analysisResult.causePrediction}</p>
             </div>
         </div>
       );
