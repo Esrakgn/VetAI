@@ -15,11 +15,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { handleDetectBirth } from '@/lib/actions';
-import { Loader2, AlertTriangle, FileVideo, CheckCircle, Video, PartyPopper, XCircle, Camera, Lightbulb, LocateFixed, Eye, Sunrise, Wind, Scaling, ShieldCheck } from 'lucide-react';
+import { Loader2, AlertTriangle, FileVideo, CheckCircle, Video, PartyPopper, XCircle, Camera } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '../ui/badge';
-import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 
 const cameraFeeds = [
   { id: 'facility-1', location: 'Tesis 1 - Bölüm A' },
@@ -250,41 +249,6 @@ export function BirthDetectionClient() {
                     </form>
                 </CardContent>
             </Card>
-            <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center"><Lightbulb className="mr-2 text-primary"/>Kamera Yerleşimi İçin Öneriler</CardTitle>
-                <CardDescription>Doğum tespiti özelliğinin doğru çalışabilmesi için kamera kurulumunun aşağıdaki şekilde yapılması önerilir:</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <ul className="space-y-3 text-sm text-muted-foreground">
-                    <li className="flex items-start">
-                        <LocateFixed className="mr-3 mt-1 h-4 w-4 shrink-0 text-primary"/>
-                        <span>Kamera, yeni doğan alanına veya doğum bölmesine bakacak şekilde yerleştirilmelidir.</span>
-                    </li>
-                    <li className="flex items-start">
-                        <Eye className="mr-3 mt-1 h-4 w-4 shrink-0 text-primary"/>
-                        <span>Görüntü açısı, hayvanın yan profilden veya hafif üst açıdan tüm vücudunu görecek şekilde ayarlanmalıdır.</span>
-                    </li>
-                    <li className="flex items-start">
-                        <Sunrise className="mr-3 mt-1 h-4 w-4 shrink-0 text-primary"/>
-                        <span>Geniş açılı (wide angle) kamera tercih edilmelidir; böylece zemindeki kan/sıvı izleri ve yavrunun doğum anı kolayca algılanır.</span>
-                    </li>
-                    <li className="flex items-start">
-                        <Wind className="mr-3 mt-1 h-4 w-4 shrink-0 text-primary"/>
-                        <span>Gece görüş (IR) özelliği olan kameralar, düşük ışıklı ortamlarda bile doğru tespit yapılmasını sağlar.</span>
-                    </li>
-
-                    <li className="flex items-start">
-                        <Scaling className="mr-3 mt-1 h-4 w-4 shrink-0 text-primary"/>
-                        <span>Kamera yüksekliği genellikle 1.5 – 2 metre arası olmalı ve doğum alanını ortalayacak şekilde sabitlenmelidir.</span>
-                    </li>
-                    <li className="flex items-start">
-                        <ShieldCheck className="mr-3 mt-1 h-4 w-4 shrink-0 text-primary"/>
-                        <span>Lensin doğum sırasında kirlenmemesi için mümkünse kamera koruma kutusu (housing) kullanılmalıdır.</span>
-                    </li>
-                </ul>
-            </CardContent>
-        </Card>
         </div>
         <div>
             <Card>
