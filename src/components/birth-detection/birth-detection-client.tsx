@@ -1,7 +1,7 @@
 'use client';
 
 import { useFormStatus } from 'react-dom';
-import { useEffect, useState, useRef, useActionState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Image from 'next/image';
 import {
   Select,
@@ -35,6 +35,9 @@ const initialState = {
   error: null,
 };
 
+type AnalysisResult = typeof initialState;
+
+
 function SubmitButton({ framesCaptured }: { framesCaptured: boolean }) {
   const { pending } = useFormStatus();
   return (
@@ -53,7 +56,7 @@ function SubmitButton({ framesCaptured }: { framesCaptured: boolean }) {
 
 export function BirthDetectionClient() {
   const { toast } = useToast();
-  const [state, formAction] = useActionState(handleDetectBirth, initialState);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [frames, setFrames] = useState<string[]>([]);
   const [videoFileName, setVideoFileName] = useState('');
   const [progress, setProgress] = useState(0);
@@ -134,10 +137,10 @@ export function BirthDetectionClient() {
     setVideoFileName('');
     setProgress(0);
     if(videoRef.current) videoRef.current.src = "";
-    (formAction as any)(initialState);
+    setAnalysisResult(null);
   }
 
-  const passFramesToAction = (formData: FormData) => {
+  const passFramesToAction = async (formData: FormData) => {
     if (frames.length === 0) {
       toast({
         variant: 'destructive',
@@ -149,29 +152,33 @@ export function BirthDetectionClient() {
     frames.forEach((frame) => {
       formData.append(`frames`, frame);
     });
-    formAction(formData);
+
+    const result = await handleDetectBirth(initialState, formData);
+    setAnalysisResult(result);
   };
 
   useEffect(() => {
-    if (state.error) {
+    if (!analysisResult) return;
+
+    if (analysisResult.error) {
       toast({
         variant: 'destructive',
         title: 'Tespit Başarısız',
-        description: state.error,
+        description: analysisResult.error,
       });
-    } else if (state.isBirthDetected) {
+    } else if (analysisResult.isBirthDetected) {
       toast({
         className: 'bg-success text-success-foreground',
         title: 'Doğum Tespit Edildi!',
         description: `Konum: ${selectedFeed}. Detaylar için sonucu inceleyin.`,
       });
-    } else if (state.isBirthDetected === false) {
+    } else if (analysisResult.isBirthDetected === false) {
       toast({
         title: 'Analiz Tamamlandı',
         description: `Doğum tespit edilmedi.`,
       });
     }
-  }, [state, toast, selectedFeed]);
+  }, [analysisResult, toast, selectedFeed]);
   
   const selectedLocation = cameraFeeds.find(f => f.id === selectedFeed)?.location || 'Bilinmeyen Konum';
 
@@ -229,10 +236,10 @@ export function BirthDetectionClient() {
                                 </div>
                                 )}
 
-                                {state.error && (
+                                {analysisResult?.error && (
                                 <div className="flex items-center gap-x-2 text-sm text-destructive">
                                     <AlertTriangle className="h-4 w-4" />
-                                    <p>{state.error}</p>
+                                    <p>{analysisResult.error}</p>
                                 </div>
                                 )}
                                 <SubmitButton framesCaptured={frames.length > 0} />
@@ -249,7 +256,7 @@ export function BirthDetectionClient() {
                     <CardDescription>Doğum tespiti analizinin sonuçları burada görünecektir.</CardDescription>
                 </CardHeader>
                 <CardContent className="min-h-[400px]">
-                    {state.evidence ? (
+                    {analysisResult?.evidence ? (
                         <div className="space-y-4">
                         <h3 className="text-lg font-semibold flex items-center text-primary"><CheckCircle className="mr-2 h-5 w-5" />Tespit Tamamlandı</h3>
                         
@@ -260,7 +267,7 @@ export function BirthDetectionClient() {
 
                         <div className="flex items-center space-x-2">
                             <p className="font-semibold">Sonuç:</p>
-                            {state.isBirthDetected ? (
+                            {analysisResult.isBirthDetected ? (
                             <Badge className="bg-success hover:bg-success">
                                 <PartyPopper className="mr-2 h-4 w-4" />
                                 Doğum Tespit Edildi
@@ -273,23 +280,23 @@ export function BirthDetectionClient() {
                             )}
                         </div>
 
-                        {state.isBirthDetected && (
+                        {analysisResult.isBirthDetected && (
                             <div>
                                 <h4 className="font-semibold text-foreground">Tahmini Doğum Zamanı</h4>
-                                <p className="text-sm text-muted-foreground mt-1 bg-secondary p-3 rounded-md">{state.estimatedBirthTime}</p>
+                                <p className="text-sm text-muted-foreground mt-1 bg-secondary p-3 rounded-md">{analysisResult.estimatedBirthTime}</p>
                             </div>
                         )}
                         
                         <div>
                             <h4 className="font-semibold text-foreground">Kanıt</h4>
-                            <p className="text-sm text-muted-foreground mt-1 bg-secondary p-3 rounded-md">{state.evidence}</p>
+                            <p className="text-sm text-muted-foreground mt-1 bg-secondary p-3 rounded-md">{analysisResult.evidence}</p>
                         </div>
 
-                        {state.keyFrame && (
+                        {analysisResult.keyFrame && (
                             <div>
                             <h4 className="font-semibold text-foreground">Ekran Görüntüsü</h4>
                             <div className="mt-2 relative border rounded-md p-2">
-                                <Image src={state.keyFrame} alt="Doğum kanıtı" width={600} height={400} className="w-full h-auto rounded-md" />
+                                <Image src={analysisResult.keyFrame} alt="Doğum kanıtı" width={600} height={400} className="w-full h-auto rounded-md" />
                             </div>
                             </div>
                         )}
