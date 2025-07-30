@@ -22,8 +22,8 @@ const AnalyzeBehaviorInputSchema = z.object({
 export type AnalyzeBehaviorInput = z.infer<typeof AnalyzeBehaviorInputSchema>;
 
 const AnalyzeBehaviorOutputSchema = z.object({
-  anomalies: z.array(z.string()).describe('A list of detected anomalous behaviors.'),
-  causePrediction: z.string().describe('A ranked listing of probable causes for observed anomalies.'),
+  anomalies: z.array(z.string()).describe('Tespit edilen anormal davranışların bir listesi.'),
+  causePrediction: z.string().describe('Gözlemlenen anormallikler için olası nedenlerin sıralı bir listesi.'),
 });
 export type AnalyzeBehaviorOutput = z.infer<typeof AnalyzeBehaviorOutputSchema>;
 
@@ -35,23 +35,23 @@ const analyzeBehaviorPrompt = ai.definePrompt({
   name: 'analyzeBehaviorPrompt',
   input: {schema: AnalyzeBehaviorInputSchema},
   output: {schema: AnalyzeBehaviorOutputSchema},
-  prompt: `You are an AI assistant that analyzes animal behavior in video feeds.
+  prompt: `Hayvan davranışlarını video akışlarında analiz eden bir yapay zeka asistanısınız.
 
-  You will receive a series of frames from a video and a description of the expected behavior.
-  Your task is to identify any anomalous behaviors shown in the frames and predict their probable causes.
+  Bir videodan bir dizi kare ve beklenen davranışın bir açıklamasını alacaksınız.
+  Göreviniz, karelerde gösterilen anormal davranışları belirlemek ve olası nedenlerini tahmin etmektir.
   
   {{#each frames}}
-  Frame: {{media url=this}}
+  Kare: {{media url=this}}
   {{/each}}
 
-  Expected Behavior: {{{behaviorDescription}}}
+  Beklenen Davranış: {{{behaviorDescription}}}
 
-  Anomalies:
-  - List any unusual behaviors observed in the video frames.
+  Anormallikler:
+  - Video karelerinde gözlemlenen olağandışı davranışları listeleyin.
 
-  Cause Prediction:
-  - Provide a ranked listing of probable causes for the observed anomalies.
-  - Consider factors such as disease, stress, and injury.
+  Neden Tahmini:
+  - Gözlemlenen anormallikler için olası nedenlerin sıralı bir listesini sağlayın.
+  - Hastalık, stres ve yaralanma gibi faktörleri göz önünde bulundurun.
 `,
 });
 
