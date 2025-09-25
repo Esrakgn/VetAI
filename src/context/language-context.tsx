@@ -15,31 +15,27 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguage] = useState<Language>('tr');
 
   useEffect(() => {
+    // On mount, check local storage for saved language
     const savedLanguage = localStorage.getItem('language') as Language | null;
     if (savedLanguage) {
       setLanguage(savedLanguage);
+      document.documentElement.lang = savedLanguage;
     }
   }, []);
-  
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      document.documentElement.lang = language;
-    }
-  }, [language]);
 
   const value = {
     language,
     setLanguage: (lang: Language) => {
       setLanguage(lang);
       localStorage.setItem('language', lang);
+      // Update the html tag's lang attribute when language changes
+      document.documentElement.lang = lang;
     },
   };
 
   return (
     <LanguageContext.Provider value={value}>
-      <html lang={language} suppressHydrationWarning>
-        {children}
-      </html>
+      {children}
     </LanguageContext.Provider>
   );
 }

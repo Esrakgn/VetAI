@@ -16,7 +16,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <LanguageProvider>
+    <html lang="tr" suppressHydrationWarning>
         <head>
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -25,18 +25,20 @@ export default function RootLayout({
           <link href="https://unpkg.com/maplibre-gl@4.5.0/dist/maplibre-gl.css" rel="stylesheet" />
         </head>
         <body className="font-body antialiased bg-background text-foreground">
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="dark"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <FirebaseClientProvider>
-              {children}
-            </FirebaseClientProvider>
-            <Toaster />
-          </ThemeProvider>
+          <LanguageProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="dark"
+              enableSystem
+              disableTransitionOnChange
+            >
+              <FirebaseClientProvider>
+                {children}
+              </FirebaseClientProvider>
+              <Toaster />
+            </ThemeProvider>
+          </LanguageProvider>
         </body>
-    </LanguageProvider>
+    </html>
   );
 }
