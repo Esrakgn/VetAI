@@ -1,52 +1,72 @@
 /**
- * @description This ruleset enforces a strict user-ownership model for alerts. Users can only access alerts that belong to them.
- * @dataStructure All alert data is nested under /users/{userId}/alerts/{alertId}.
- * @keySecurityDecisions
- *  - Users can only list alerts they own.
- *  - Users can only create alerts for themselves, with the userId field matching their own UID.
- *  - Data validation is relaxed in this prototyping phase, but ownership is strictly enforced.
- * @denormalizationForAuthorization The Alert entity includes a `userId` field, denormalizing ownership for efficient rule enforcement.
+ * @fileOverview Firestore Security Rules for the application.
+ *
+ * Core Philosophy:
+ * This ruleset enforces a strict user-ownership model for alert data. Only the authenticated user who owns a specific animal can read or modify the alerts associated with that animal.
+ *
+ * Data Structure:
+ * All alert data is nested under /users/{userId}/alerts/{alertId}. This hierarchical structure ensures clear ownership and prevents unauthorized access.
+ *
+ * Key Security Decisions:
+ * - Listing all users is disallowed to prevent information leakage.
+ * - All write operations require authentication.
+ * - Data validation is relaxed during prototyping to facilitate rapid development, with a focus on authorization and relational integrity.
+ *
+ * Denormalization for Authorization:
+ * The 'Alert' entity includes a 'userId' field that is denormalized from the user's document ID in the path. This allows rules to quickly check ownership without additional reads.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Allows users to read and write their own alerts.
+     * @description Enforces user-ownership for alerts. Only the owner can read, create, update, or delete alerts.
      * @path /users/{userId}/alerts/{alertId}
-     * @allow (list) User A5kYRtteYwZ9GBaEDbtu1UNMowz1 can list alerts under /users/A5kYRtteYwZ9GBaEDbtu1UNMowz1/alerts
-     * @allow (get) User A5kYRtteYwZ9GBaEDbtu1UNMowz1 can get alert with ID alert123 under /users/A5kYRtteYwZ9GBaEDbtu1UNMowz1/alerts/alert123
-     * @allow (create) User A5kYRtteYwZ9GBaEDbtu1UNMowz1 can create an alert under /users/A5kYRtteYwZ9GBaEDbtu1UNMowz1/alerts with userId: "A5kYRtteYwZ9GBaEDbtu1UNMowz1".
-     * @allow (update) User A5kYRtteYwZ9GBaEDbtu1UNMowz1 can update alert with ID alert123 under /users/A5kYRtteYwZ9GBaEDbtu1UNMowz1/alerts/alert123
-     * @allow (delete) User A5kYRtteYwZ9GBaEDbtu1UNMowz1 can delete alert with ID alert123 under /users/A5kYRtteYwZ9GBaEDbtu1UNMowz1/alerts/alert123
-     * @deny (list) User Bxyz cannot list alerts under /users/A5kYRtteYwZ9GBaEDbtu1UNMowz1/alerts
-     * @deny (create) User Bxyz cannot create an alert under /users/A5kYRtteYwZ9GBaEDbtu1UNMowz1/alerts
-     * @deny (update) User Bxyz cannot update alert with ID alert123 under /users/A5kYRtteYwZ9GBaEDbtu1UNMowz1/alerts/alert123
-     * @deny (delete) User Bxyz cannot delete alert with ID alert123 under /users/A5kYRtteYwZ9GBaEDbtu1UNMowz1/alerts/alert123
-     * @principle Enforces document ownership for writes and restricts access to a user's own data tree.
+     * @allow (list) Authenticated user 'A5kYRtteYwZ9GBaEDbtu1UNMowz1' can list alerts under their own user ID.
+     * @allow (create) Authenticated user can create a new alert under their user ID if the 'userId' matches.
+     * @allow (get) Authenticated user can get an alert under their own user ID.
+     * @allow (update) Authenticated user can update an existing alert under their user ID.
+     * @allow (delete) Authenticated user can delete an existing alert under their user ID.
+     * @deny (list) Authenticated user 'Bxyz' cannot list alerts under a different user ID 'A5kYRtteYwZ9GBaEDbtu1UNMowz1'.
+     * @deny (create) Unauthenticated user cannot create an alert.
+     * @deny (update) Authenticated user cannot update an alert under a different user ID.
+     * @deny (delete) Authenticated user cannot delete an alert under a different user ID.
+     * @principle Enforces document ownership for all operations.
      */
     match /users/{userId}/alerts/{alertId} {
-      // Helpers
-      function isSignedIn() {
-        return request.auth != null;
-      }
+      allow get: if isSignedIn() && isOwner(userId);
+      allow list: if isSignedIn() && isOwner(userId);
+      allow create: if isSignedIn() && request.resource.data.userId == userId;
+      allow update: if isSignedIn() && isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+      allow delete: if isSignedIn() && isExistingOwner(userId);
+    }
 
-      function isOwner(userId) {
-        return isSignedIn() && request.auth.uid == userId;
-      }
+    // --- Helper functions ---
 
-      function isExistingOwner(userId) {
-        return isOwner(userId) && resource != null;
-      }
+    /**
+     * @description Checks if the user is signed in.
+     * @return {boolean} True if the user is signed in, false otherwise.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
 
-      // Read Permissions
-      allow get: if isSignedIn();
-      allow list: if isOwner(userId);
+    /**
+     * @description Checks if the user is the owner of the resource.
+     * @param {string} userId The user ID to check against.
+     * @return {boolean} True if the user is the owner, false otherwise.
+     */
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
 
-      // Write Permissions
-      allow create: if isOwner(userId) && request.resource.data.userId == request.auth.uid;
-      allow update: if isExistingOwner(userId);
-      allow delete: if isExistingOwner(userId);
+    /**
+     * @description Checks if the user is the owner of the resource and the resource exists.
+     * @param {string} userId The user ID to check against.
+     * @return {boolean} True if the user is the owner and the resource exists, false otherwise.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
     }
   }
 }
