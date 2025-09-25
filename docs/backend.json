@@ -1,88 +1,5 @@
 {
   "entities": {
-    "Animal": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Animal",
-      "type": "object",
-      "description": "Represents an individual animal being monitored.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the animal.",
-          "format": "uuid"
-        },
-        "tagId": {
-          "type": "string",
-          "description": "Identifier of the tag associated with the animal."
-        },
-        "species": {
-          "type": "string",
-          "description": "Species of the animal (e.g., cow, sheep)."
-        },
-        "breed": {
-          "type": "string",
-          "description": "Breed of the animal (e.g., Holstein, Angus)."
-        },
-        "dateOfBirth": {
-          "type": "string",
-          "description": "Date of birth of the animal.",
-          "format": "date-time"
-        },
-        "gender": {
-          "type": "string",
-          "description": "Gender of the animal (male/female)."
-        }
-      },
-      "required": [
-        "id",
-        "tagId",
-        "species"
-      ]
-    },
-    "BehavioralEvent": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "BehavioralEvent",
-      "type": "object",
-      "description": "Represents a specific instance of observed animal behavior.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the behavioral event.",
-          "format": "uuid"
-        },
-        "animalId": {
-          "type": "string",
-          "description": "Reference to the Animal associated with this behavior. (Relationship: Animal 1:N BehavioralEvent)"
-        },
-        "timestamp": {
-          "type": "string",
-          "description": "Timestamp of when the behavior was observed.",
-          "format": "date-time"
-        },
-        "behaviorType": {
-          "type": "string",
-          "description": "Type of behavior observed (e.g., standing, lying down, limping)."
-        },
-        "description": {
-          "type": "string",
-          "description": "A more detailed description of the event."
-        },
-        "isAnomaly": {
-          "type": "boolean",
-          "description": "Indicates whether the behavior is considered an anomaly."
-        },
-        "confidenceScore": {
-          "type": "number",
-          "description": "Confidence score of the model's prediction of the behavior."
-        }
-      },
-      "required": [
-        "id",
-        "animalId",
-        "timestamp",
-        "behaviorType"
-      ]
-    },
     "Alert": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Alert",
@@ -97,10 +14,6 @@
         "animalId": {
           "type": "string",
           "description": "Reference to the Animal that triggered the alert. (Relationship: Animal 1:N Alert)"
-        },
-        "behavioralEventId": {
-          "type": "string",
-          "description": "Reference to the BehavioralEvent that triggered the alert. (Relationship: BehavioralEvent 1:N Alert)"
         },
         "timestamp": {
           "type": "string",
@@ -118,108 +31,37 @@
         "isResolved": {
           "type": "boolean",
           "description": "Indicates whether the alert has been resolved."
+        },
+        "userId": {
+          "type": "string",
+          "description": "The ID of the user who owns the alert."
+        },
+        "severity": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
         }
       },
       "required": [
         "id",
         "animalId",
-        "behavioralEventId",
         "timestamp",
         "alertType",
-        "message"
-      ]
-    },
-    "ProbableCause": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "ProbableCause",
-      "type": "object",
-      "description": "Represents a probable cause as predicted by the GenAI, for a given anomaly.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the probable cause.",
-          "format": "uuid"
-        },
-        "behavioralEventId": {
-          "type": "string",
-          "description": "Reference to the BehavioralEvent that this cause is associated with. (Relationship: BehavioralEvent 1:N ProbableCause)"
-        },
-        "cause": {
-          "type": "string",
-          "description": "The probable cause (e.g., sickness, injury)."
-        },
-        "confidenceScore": {
-          "type": "number",
-          "description": "Confidence score of the GenAI's prediction."
-        },
-        "rank": {
-          "type": "number",
-          "description": "Rank of the probable cause in the list of predictions."
-        }
-      },
-      "required": [
-        "id",
-        "behavioralEventId",
-        "cause",
-        "confidenceScore",
-        "rank"
+        "message",
+        "userId"
       ]
     }
   },
   "auth": {
     "providers": [
-      "password",
       "anonymous"
     ]
   },
   "firestore": {
     "structure": [
       {
-        "path": "users/{userId}/animals/{animalId}",
-        "definition": {
-          "entityName": "Animal",
-          "schema": {
-            "$ref": "#/backend/entities/Animal"
-          },
-          "description": "Stores individual animal data, owned by the user. Supports animal tracking and management. Includes denormalized 'userId' for authorization independence.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The ID of the user who owns the animal."
-            },
-            {
-              "name": "animalId",
-              "description": "The unique ID of the animal."
-            }
-          ]
-        }
-      },
-      {
-        "path": "users/{userId}/animals/{animalId}/behavioralEvents/{behavioralEventId}",
-        "definition": {
-          "entityName": "BehavioralEvent",
-          "schema": {
-            "$ref": "#/backend/entities/BehavioralEvent"
-          },
-          "description": "Stores behavioral event data for each animal, owned by the user. Supports behavior analysis and anomaly detection. Includes denormalized 'userId' and 'animalId' for authorization independence.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The ID of the user who owns the animal."
-            },
-            {
-              "name": "animalId",
-              "description": "The ID of the animal the event is associated with."
-            },
-            {
-              "name": "behavioralEventId",
-              "description": "The unique ID of the behavioral event."
-            }
-          ]
-        }
-      },
-      {
-        "path": "users/{userId}/animals/{animalId}/alerts/{alertId}",
+        "path": "users/{userId}/alerts/{alertId}",
         "definition": {
           "entityName": "Alert",
           "schema": {
@@ -232,45 +74,12 @@
               "description": "The ID of the user who owns the animal."
             },
             {
-              "name": "animalId",
-              "description": "The ID of the animal the alert is associated with."
-            },
-            {
               "name": "alertId",
               "description": "The unique ID of the alert."
             }
           ]
         }
-      },
-      {
-        "path": "users/{userId}/animals/{animalId}/behavioralEvents/{behavioralEventId}/probableCauses/{probableCauseId}",
-        "definition": {
-          "entityName": "ProbableCause",
-          "schema": {
-            "$ref": "#/backend/entities/ProbableCause"
-          },
-          "description": "Stores probable cause data for each behavioral event, owned by the user. Supports the anomaly cause prediction feature. Includes denormalized 'userId', 'animalId', and 'behavioralEventId' for authorization independence.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The ID of the user who owns the animal."
-            },
-            {
-              "name": "animalId",
-              "description": "The ID of the animal the behavioral event is associated with."
-            },
-            {
-              "name": "behavioralEventId",
-              "description": "The ID of the behavioral event the probable cause is associated with."
-            },
-            {
-              "name": "probableCauseId",
-              "description": "The unique ID of the probable cause."
-            }
-          ]
-        }
       }
-    ],
-    "reasoning": "The Firestore structure is designed to support the BehavioVet application, focusing on analyzing animal behavior to detect anomalies. The structure is optimized for security, scalability, and debuggability, following the principles of Authorization Independence, Clarity of Intent, and DBAC (Database-Based Access Control). Hierarchical ownership is leveraged for user-specific data, while membership maps facilitate collaborative data access where necessary. The design uses denormalization to avoid `get()` calls in security rules, ensuring atomic operations and easier debugging. Structural Segregation is employed to maintain a homogeneous security posture within each collection. Specifically, I have implemented a path-based ownership pattern for `Animal`, `BehavioralEvent`, `Alert` and `ProbableCause` entities creating a natural hierarchy where the users owns all the animals, and each animal has its own behavioral events, alerts and probable causes. This is efficient and secure, as security rules can easily enforce that only the owner of an animal can access its data.The structure is optimized to support the required application features, including real-time video analysis, anomaly detection, animal tracking, data recording, and the alert system."
+    ]
   }
 }

@@ -2,9 +2,12 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import { AlertCircle, Clock4, ArrowRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { formatDistanceToNow } from 'date-fns';
+import { tr } from 'date-fns/locale';
+import { Skeleton } from '../ui/skeleton';
 
 export type Alert = {
-  id: number;
+  id: string;
   animalId: string;
   description: string;
   timestamp: string;
@@ -19,9 +22,10 @@ const severityMap = {
 
 type RecentAlertsProps = {
   alerts: Alert[];
+  isLoading: boolean;
 };
 
-export function RecentAlerts({ alerts }: RecentAlertsProps) {
+export function RecentAlerts({ alerts, isLoading }: RecentAlertsProps) {
   return (
     <Card>
       <CardHeader>
@@ -30,26 +34,36 @@ export function RecentAlerts({ alerts }: RecentAlertsProps) {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {alerts.map(alert => (
-            <div key={alert.id} className="flex items-start gap-4">
-              <div className="mt-1">
-                <AlertCircle className="h-5 w-5 text-destructive" />
-              </div>
-              <div className="flex-1">
-                <div className="flex justify-between items-center">
-                  <p className="text-sm font-semibold text-foreground">{alert.animalId}</p>
-                  <Badge variant={severityMap[alert.severity] || 'default'}>
-                    {alert.severity}
-                  </Badge>
+          {isLoading ? (
+            <>
+              <Skeleton className="h-16 w-full" />
+              <Skeleton className="h-16 w-full" />
+              <Skeleton className="h-16 w-full" />
+            </>
+          ) : alerts.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Aktif alarm bulunmamaktadır.</p>
+          ) : (
+            alerts.map(alert => (
+              <div key={alert.id} className="flex items-start gap-4">
+                <div className="mt-1">
+                  <AlertCircle className="h-5 w-5 text-destructive" />
                 </div>
-                <p className="text-sm text-muted-foreground">{alert.description}</p>
-                <div className="flex items-center text-xs text-muted-foreground/80 mt-1">
-                  <Clock4 className="h-3 w-3 mr-1.5" />
-                  <span>{alert.timestamp}</span>
+                <div className="flex-1">
+                  <div className="flex justify-between items-center">
+                    <p className="text-sm font-semibold text-foreground">{alert.animalId}</p>
+                    <Badge variant={severityMap[alert.severity] || 'default'}>
+                      {alert.severity}
+                    </Badge>
+                  </div>
+                  <p className="text-sm text-muted-foreground">{alert.description}</p>
+                  <div className="flex items-center text-xs text-muted-foreground/80 mt-1">
+                    <Clock4 className="h-3 w-3 mr-1.5" />
+                    <span>{formatDistanceToNow(new Date(alert.timestamp), { addSuffix: true, locale: tr })}</span>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </CardContent>
       <CardFooter>

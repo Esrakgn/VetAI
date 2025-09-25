@@ -1,57 +1,45 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useEffect } from 'react';
 import { Header } from '@/components/dashboard/header';
 import { StatCard } from '@/components/dashboard/stat-card';
 import { VideoFeeds } from '@/components/dashboard/video-feeds';
-import { RecentAlerts, type Alert } from '@/components/dashboard/recent-alerts';
+import { RecentAlerts } from '@/components/dashboard/recent-alerts';
 import { Users, AlertTriangle, ShieldCheck } from 'lucide-react';
-
-const initialAlerts: Alert[] = [
-  {
-    id: 1,
-    animalId: 'Hayvan #842',
-    description: 'Uzun süreli hareketsizlik tespit edildi.',
-    timestamp: '5 dakika önce',
-    severity: 'Yüksek',
-  },
-  {
-    id: 2,
-    animalId: 'Hayvan #109',
-    description: 'Grupdan ayrıldı.',
-    timestamp: '2 saat önce',
-    severity: 'Orta',
-  },
-  {
-    id: 3,
-    animalId: 'Hayvan #331',
-    description: 'Beslenme zamanı topallama gözlendi.',
-    timestamp: '8 saat önce',
-    severity: 'Yüksek',
-  },
-  {
-    id: 4,
-    animalId: 'Genel',
-    description: 'A Bölgesinde grup hareketliliğinde azalma.',
-    timestamp: '1 gün önce',
-    severity: 'Düşük',
-  },
-];
-
+import { useCollection, useFirestore, useUser, addDocumentNonBlocking, useMemoFirebase, initiateAnonymousSignIn, useAuth } from '@/firebase';
+import { collection } from 'firebase/firestore';
 
 export default function DashboardPage() {
-  const [alerts, setAlerts] = useState<Alert[]>(initialAlerts);
+  const firestore = useFirestore();
+  const auth = useAuth();
+  const { user, isUserLoading } = useUser();
+
+  const alertsQuery = useMemoFirebase(() => 
+    user ? collection(firestore, 'users', user.uid, 'alerts') : null
+  , [firestore, user]);
+
+  const { data: alerts, isLoading } = useCollection(alertsQuery);
+
+  useEffect(() => {
+    if (!isUserLoading && !user) {
+      initiateAnonymousSignIn(auth);
+    }
+  }, [isUserLoading, user, auth]);
 
   const addAlert = (location: string, anomaly: string) => {
-    const newAlert: Alert = {
-      id: Date.now() + alerts.length, // Use a more unique ID
+    if (!user) return;
+
+    const newAlert = {
       animalId: `Konum: ${location}`,
       description: anomaly,
-      timestamp: 'Şimdi',
-      severity: 'Yüksek'
+      timestamp: new Date().toISOString(),
+      severity: 'Yüksek',
+      userId: user.uid,
     };
-    setAlerts(prevAlerts => [newAlert, ...prevAlerts]);
+    
+    const alertsCollection = collection(firestore, 'users', user.uid, 'alerts');
+    addDocumentNonBlocking(alertsCollection, newAlert);
   };
   
   return (
@@ -62,7 +50,7 @@ export default function DashboardPage() {
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <StatCard title="Toplam Hayvan" value="1,250" icon={<Users className="h-8 w-8 text-primary" />} description="Geçen aydan beri +12" />
-        <StatCard title="Aktif Alarmlar" value={alerts.length.toString()} icon={<AlertTriangle className="h-8 w-8 text-destructive" />} description="Dinamik olarak güncellendi" />
+        <StatCard title="Aktif Alarmlar" value={alerts?.length.toString() ?? '0'} icon={<AlertTriangle className="h-8 w-8 text-destructive" />} description="Dinamik olarak güncellendi" />
         <StatCard title="Sağlık Durumu" value="%99.04" icon={<ShieldCheck className="h-8 w-8 text-success" />} description="Stabil" />
       </div>
       
@@ -71,7 +59,7 @@ export default function DashboardPage() {
           <VideoFeeds onAnalyze={addAlert} />
         </div>
         <div className="space-y-8">
-          <RecentAlerts alerts={alerts} />
+          <RecentAlerts alerts={alerts || []} isLoading={isLoading} />
         </div>
       </div>
     </>

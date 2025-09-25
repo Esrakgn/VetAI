@@ -2,6 +2,7 @@ import type {Metadata} from 'next';
 import { Toaster } from "@/components/ui/toaster"
 import { ThemeProvider } from '@/components/theme-provider';
 import './globals.css';
+import { FirebaseClientProvider } from '@/firebase/client-provider';
 
 export const metadata: Metadata = {
   title: 'VetAI',
@@ -29,7 +30,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <FirebaseClientProvider>
+            {children}
+          </FirebaseClientProvider>
           <Toaster />
         </ThemeProvider>
       </body>
