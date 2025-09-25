@@ -84,13 +84,6 @@ export function SettingsForm() {
               </div>
               <Switch id="push-notifications" />
             </div>
-             <div className="flex items-center justify-between p-3 rounded-md border">
-                <div>
-                    <Label htmlFor="sms-notifications" className="font-normal">SMS Bildirimleri</Label>
-                    <p className="text-xs text-muted-foreground">Çok acil durumlar için SMS uyarıları.</p>
-                </div>
-                <Switch id="sms-notifications" />
-            </div>
           </div>
 
           <div className="flex justify-end">
