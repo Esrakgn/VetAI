@@ -15,6 +15,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguage] = useState<Language>('tr');
 
   useEffect(() => {
+    // This code runs only on the client.
     const savedLanguage = localStorage.getItem('language') as Language | null;
     if (savedLanguage) {
       setLanguage(savedLanguage);
@@ -22,6 +23,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    // This code also runs only on the client.
     document.documentElement.lang = language;
     localStorage.setItem('language', language);
   }, [language]);
