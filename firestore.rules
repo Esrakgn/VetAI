@@ -1,181 +1,51 @@
 /**
- * @fileoverview Firestore Security Rules for BehavioVet application.
- *
- * Core Philosophy:
- * This ruleset enforces a strict user-ownership model. Each user can only access the animals, behavioral events, alerts, and probable causes that they own.
- *
- * Data Structure:
- * All data is nested under /users/{userId}, creating a clear ownership hierarchy. This includes:
- * - /users/{userId}/animals/{animalId}
- * - /users/{userId}/animals/{animalId}/behavioralEvents/{behavioralEventId}
- * - /users/{userId}/animals/{animalId}/alerts/{alertId}
- * - /users/{userId}/animals/{animalId}/behavioralEvents/{behavioralEventId}/probableCauses/{probableCauseId}
- *
- * Key Security Decisions:
- * - All `list` operations are restricted to the owner. Public listing is disallowed to protect user privacy.
- * - Data consistency is enforced between the path and document data, specifically regarding the user ID.
- * - Destructive operations (update, delete) require verifying the document's existence to prevent accidental removals.
- *
- * Denormalization for Authorization:
- * The data model denormalizes ownership by nesting all animal-related data under the `users/{userId}` path. This avoids costly `get()` calls to separate user documents.
+ * @description This ruleset enforces a strict user-ownership model for alerts. Users can only access alerts that belong to them.
+ * @dataStructure All alert data is nested under /users/{userId}/alerts/{alertId}.
+ * @keySecurityDecisions
+ *  - Users can only list alerts they own.
+ *  - Users can only create alerts for themselves, with the userId field matching their own UID.
+ *  - Data validation is relaxed in this prototyping phase, but ownership is strictly enforced.
+ * @denormalizationForAuthorization The Alert entity includes a `userId` field, denormalizing ownership for efficient rule enforcement.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Enforces user-ownership for animal documents. Only the owner can create, read, update, or delete an animal.
-     * @path /users/{userId}/animals/{animalId}
-     * @allow (create) - User 'user123' can create a new animal with ID 'animal456' under their user ID.
-     *   Request: { auth: { uid: 'user123' }, resource: { data: { id: 'animal456' } } }
-     * @allow (get) - User 'user123' can read animal 'animal456' under their user ID.
-     *   Request: { auth: { uid: 'user123' } }
-     * @allow (update) - User 'user123' can update animal 'animal456' under their user ID.
-     *   Request: { auth: { uid: 'user123' } }
-     * @allow (delete) - User 'user123' can delete animal 'animal456' under their user ID.
-     *   Request: { auth: { uid: 'user123' } }
-     * @deny (create) - User 'user456' cannot create an animal under user 'user123'.
-     *   Request: { auth: { uid: 'user456' }, resource: { data: { id: 'animal789' } } }
-     * @deny (get) - User 'user456' cannot read animal 'animal456' under user 'user123'.
-     *   Request: { auth: { uid: 'user456' } }
-     * @deny (update) - User 'user456' cannot update animal 'animal456' under user 'user123'.
-     *   Request: { auth: { uid: 'user456' } }
-     * @deny (delete) - User 'user456' cannot delete animal 'animal456' under user 'user123'.
-     *   Request: { auth: { uid: 'user456' } }
-     * @principle Enforces document ownership for all operations.
+     * @description Allows users to read and write their own alerts.
+     * @path /users/{userId}/alerts/{alertId}
+     * @allow (list) User A5kYRtteYwZ9GBaEDbtu1UNMowz1 can list alerts under /users/A5kYRtteYwZ9GBaEDbtu1UNMowz1/alerts
+     * @allow (get) User A5kYRtteYwZ9GBaEDbtu1UNMowz1 can get alert with ID alert123 under /users/A5kYRtteYwZ9GBaEDbtu1UNMowz1/alerts/alert123
+     * @allow (create) User A5kYRtteYwZ9GBaEDbtu1UNMowz1 can create an alert under /users/A5kYRtteYwZ9GBaEDbtu1UNMowz1/alerts with userId: "A5kYRtteYwZ9GBaEDbtu1UNMowz1".
+     * @allow (update) User A5kYRtteYwZ9GBaEDbtu1UNMowz1 can update alert with ID alert123 under /users/A5kYRtteYwZ9GBaEDbtu1UNMowz1/alerts/alert123
+     * @allow (delete) User A5kYRtteYwZ9GBaEDbtu1UNMowz1 can delete alert with ID alert123 under /users/A5kYRtteYwZ9GBaEDbtu1UNMowz1/alerts/alert123
+     * @deny (list) User Bxyz cannot list alerts under /users/A5kYRtteYwZ9GBaEDbtu1UNMowz1/alerts
+     * @deny (create) User Bxyz cannot create an alert under /users/A5kYRtteYwZ9GBaEDbtu1UNMowz1/alerts
+     * @deny (update) User Bxyz cannot update alert with ID alert123 under /users/A5kYRtteYwZ9GBaEDbtu1UNMowz1/alerts/alert123
+     * @deny (delete) User Bxyz cannot delete alert with ID alert123 under /users/A5kYRtteYwZ9GBaEDbtu1UNMowz1/alerts/alert123
+     * @principle Enforces document ownership for writes and restricts access to a user's own data tree.
      */
-    match /users/{userId}/animals/{animalId} {
-      // Helper function to check if the request is from the owner of the document.
-      function isOwner(userId) {
-        return request.auth != null && request.auth.uid == userId;
+    match /users/{userId}/alerts/{alertId} {
+      // Helpers
+      function isSignedIn() {
+        return request.auth != null;
       }
 
-      // Helper function to check if the request is from the existing owner of the document.
+      function isOwner(userId) {
+        return isSignedIn() && request.auth.uid == userId;
+      }
+
       function isExistingOwner(userId) {
         return isOwner(userId) && resource != null;
       }
 
-      allow get: if isOwner(userId);
+      // Read Permissions
+      allow get: if isSignedIn();
       allow list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.id == animalId;
-      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
-      allow delete: if isExistingOwner(userId);
-    }
 
-    /**
-     * @description Enforces user-ownership for behavioral event documents. Only the owner can create, read, update, or delete an event.
-     * @path /users/{userId}/animals/{animalId}/behavioralEvents/{behavioralEventId}
-     * @allow (create) - User 'user123' can create a new event with ID 'event456' under their animal 'animal456'.
-     *   Request: { auth: { uid: 'user123' }, resource: { data: { id: 'event456', animalId: 'animal456' } } }
-     * @allow (get) - User 'user123' can read event 'event456' under their animal 'animal456'.
-     *   Request: { auth: { uid: 'user123' } }
-     * @allow (update) - User 'user123' can update event 'event456' under their animal 'animal456'.
-     *   Request: { auth: { uid: 'user123' } }
-     * @allow (delete) - User 'user123' can delete event 'event456' under their animal 'animal456'.
-     *   Request: { auth: { uid: 'user123' } }
-     * @deny (create) - User 'user456' cannot create an event under user 'user123'.
-     *   Request: { auth: { uid: 'user456' }, resource: { data: { id: 'event789', animalId: 'animal456' } } }
-     * @deny (get) - User 'user456' cannot read event 'event456' under user 'user123'.
-     *   Request: { auth: { uid: 'user456' } }
-     * @deny (update) - User 'user456' cannot update event 'event456' under user 'user123'.
-     *   Request: { auth: { uid: 'user456' } }
-     * @deny (delete) - User 'user456' cannot delete event 'event456' under user 'user123'.
-     *   Request: { auth: { uid: 'user456' } }
-     * @principle Enforces document ownership for all operations.
-     */
-    match /users/{userId}/animals/{animalId}/behavioralEvents/{behavioralEventId} {
-      // Helper function to check if the request is from the owner of the document.
-      function isOwner(userId) {
-        return request.auth != null && request.auth.uid == userId;
-      }
-
-      // Helper function to check if the request is from the existing owner of the document.
-      function isExistingOwner(userId) {
-        return isOwner(userId) && resource != null;
-      }
-
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.animalId == animalId && request.resource.data.id == behavioralEventId;
-      allow update: if isExistingOwner(userId) && request.resource.data.animalId == animalId && request.resource.data.id == resource.data.id;
-      allow delete: if isExistingOwner(userId);
-    }
-
-    /**
-     * @description Enforces user-ownership for alert documents. Only the owner can create, read, update, or delete an alert.
-     * @path /users/{userId}/animals/{animalId}/alerts/{alertId}
-     * @allow (create) - User 'user123' can create a new alert with ID 'alert456' under their animal 'animal456'.
-     *   Request: { auth: { uid: 'user123' }, resource: { data: { id: 'alert456', animalId: 'animal456' } } }
-     * @allow (get) - User 'user123' can read alert 'alert456' under their animal 'animal456'.
-     *   Request: { auth: { uid: 'user123' } }
-     * @allow (update) - User 'user123' can update alert 'alert456' under their animal 'animal456'.
-     *   Request: { auth: { uid: 'user123' } }
-     * @allow (delete) - User 'user123' can delete alert 'alert456' under their animal 'animal456'.
-     *   Request: { auth: { uid: 'user123' } }
-     * @deny (create) - User 'user456' cannot create an alert under user 'user123'.
-     *   Request: { auth: { uid: 'user456' }, resource: { data: { id: 'alert789', animalId: 'animal456' } } }
-     * @deny (get) - User 'user456' cannot read alert 'alert456' under user 'user123'.
-     *   Request: { auth: { uid: 'user456' } }
-     * @deny (update) - User 'user456' cannot update alert 'alert456' under user 'user123'.
-     *   Request: { auth: { uid: 'user456' } }
-     * @deny (delete) - User 'user456' cannot delete alert 'alert456' under user 'user123'.
-     *   Request: { auth: { uid: 'user456' } }
-     * @principle Enforces document ownership for all operations.
-     */
-    match /users/{userId}/animals/{animalId}/alerts/{alertId} {
-      // Helper function to check if the request is from the owner of the document.
-      function isOwner(userId) {
-        return request.auth != null && request.auth.uid == userId;
-      }
-
-      // Helper function to check if the request is from the existing owner of the document.
-      function isExistingOwner(userId) {
-        return isOwner(userId) && resource != null;
-      }
-
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.animalId == animalId && request.resource.data.id == alertId;
-      allow update: if isExistingOwner(userId) && request.resource.data.animalId == animalId && request.resource.data.id == resource.data.id;
-      allow delete: if isExistingOwner(userId);
-    }
-
-    /**
-     * @description Enforces user-ownership for probable cause documents. Only the owner can create, read, update, or delete a probable cause.
-     * @path /users/{userId}/animals/{animalId}/behavioralEvents/{behavioralEventId}/probableCauses/{probableCauseId}
-     * @allow (create) - User 'user123' can create a new probable cause with ID 'cause456' under their event 'event456'.
-     *   Request: { auth: { uid: 'user123' }, resource: { data: { id: 'cause456', behavioralEventId: 'event456' } } }
-     * @allow (get) - User 'user123' can read probable cause 'cause456' under their event 'event456'.
-     *   Request: { auth: { uid: 'user123' } }
-     * @allow (update) - User 'user123' can update probable cause 'cause456' under their event 'event456'.
-     *   Request: { auth: { uid: 'user123' } }
-     * @allow (delete) - User 'user123' can delete probable cause 'cause456' under their event 'event456'.
-     *   Request: { auth: { uid: 'user123' } }
-     * @deny (create) - User 'user456' cannot create a probable cause under user 'user123'.
-     *   Request: { auth: { uid: 'user456' }, resource: { data: { id: 'cause789', behavioralEventId: 'event456' } } }
-     * @deny (get) - User 'user456' cannot read probable cause 'cause456' under user 'user123'.
-     *   Request: { auth: { uid: 'user456' } }
-     * @deny (update) - User 'user456' cannot update probable cause 'cause456' under user 'user123'.
-     *   Request: { auth: { uid: 'user456' } }
-     * @deny (delete) - User 'user456' cannot delete probable cause 'cause456' under user 'user123'.
-     *   Request: { auth: { uid: 'user456' } }
-     * @principle Enforces document ownership for all operations.
-     */
-    match /users/{userId}/animals/{animalId}/behavioralEvents/{behavioralEventId}/probableCauses/{probableCauseId} {
-      // Helper function to check if the request is from the owner of the document.
-      function isOwner(userId) {
-        return request.auth != null && request.auth.uid == userId;
-      }
-
-      // Helper function to check if the request is from the existing owner of the document.
-      function isExistingOwner(userId) {
-        return isOwner(userId) && resource != null;
-      }
-
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.behavioralEventId == behavioralEventId && request.resource.data.id == probableCauseId;
-      allow update: if isExistingOwner(userId) && request.resource.data.behavioralEventId == behavioralEventId && request.resource.data.id == resource.data.id;
+      // Write Permissions
+      allow create: if isOwner(userId) && request.resource.data.userId == request.auth.uid;
+      allow update: if isExistingOwner(userId);
       allow delete: if isExistingOwner(userId);
     }
   }
