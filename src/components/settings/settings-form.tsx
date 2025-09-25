@@ -8,12 +8,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/components/ui/use-toast';
 import { Separator } from '../ui/separator';
+import { useLanguage } from '@/context/language-context';
 
 export function SettingsForm() {
   const { toast } = useToast();
+  const { language, setLanguage } = useLanguage();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const selectedLanguage = formData.get('language') as 'tr' | 'en';
+    setLanguage(selectedLanguage);
+
     toast({
       title: 'Ayarlar Kaydedildi',
       description: 'Profil bilgileriniz başarıyla güncellendi.',
@@ -31,12 +37,12 @@ export function SettingsForm() {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="username">Kullanıcı Adı</Label>
-            <Input id="username" defaultValue="Vet AI Kullanıcısı" />
+            <Input id="username" name="username" defaultValue="Vet AI Kullanıcısı" />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="role">Rol</Label>
-            <Select defaultValue="farmer">
+            <Select name="role" defaultValue="farmer">
               <SelectTrigger id="role">
                 <SelectValue placeholder="Rolünüzü seçin" />
               </SelectTrigger>
@@ -54,7 +60,7 @@ export function SettingsForm() {
             <h3 className="text-lg font-medium">Dil ve Bölge</h3>
              <div className="space-y-2">
                 <Label htmlFor="language">Dil</Label>
-                <Select defaultValue="tr">
+                <Select name="language" defaultValue={language}>
                 <SelectTrigger id="language">
                     <SelectValue placeholder="Dil seçin" />
                 </SelectTrigger>
