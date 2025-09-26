@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -44,7 +46,7 @@ export function RecentAlerts({ alerts, isLoading }: RecentAlertsProps) {
           ) : alerts.length === 0 ? (
             <p className="text-sm text-muted-foreground">Aktif alarm bulunmamaktadır.</p>
           ) : (
-            alerts.map(alert => (
+            alerts.slice(0, 3).map(alert => (
               <div key={alert.id} className="flex items-start gap-4">
                 <div className="mt-1">
                   <AlertCircle className="h-5 w-5 text-destructive" />
@@ -67,6 +69,14 @@ export function RecentAlerts({ alerts, isLoading }: RecentAlertsProps) {
           )}
         </div>
       </CardContent>
+       <CardFooter>
+        <Button asChild variant="outline" className="w-full">
+            <Link href="/history">
+                Tüm Alarmları Görüntüle
+                <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+        </Button>
+      </CardFooter>
     </Card>
   );
 }
