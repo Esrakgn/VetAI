@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, Clock4, ArrowRight } from 'lucide-react';
@@ -67,9 +68,11 @@ export function RecentAlerts({ alerts, isLoading }: RecentAlertsProps) {
         </div>
       </CardContent>
       <CardFooter>
-        <Button variant="outline" className="w-full">
-          Tüm Alarmları Görüntüle
-          <ArrowRight className="ml-2 h-4 w-4" />
+        <Button variant="outline" className="w-full" asChild>
+          <Link href="/history">
+            Tüm Alarmları Görüntüle
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Link>
         </Button>
       </CardFooter>
     </Card>
