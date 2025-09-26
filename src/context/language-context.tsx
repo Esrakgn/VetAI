@@ -12,25 +12,38 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguage] = useState<Language>('tr');
+  // Initialize with undefined to avoid server-client mismatch
+  const [language, setLanguage] = useState<Language>('tr'); 
+  const [isInitial, setIsInitial] = useState(true);
 
+  // This effect runs only on the client, after hydration
   useEffect(() => {
     const savedLanguage = localStorage.getItem('language') as Language | null;
     if (savedLanguage) {
       setLanguage(savedLanguage);
     }
-  }, []);
+    setIsInitial(false); // Mark that initial client-side setup is done
+  }, []); // Empty dependency array ensures it runs once on mount
 
+  // This effect synchronizes the language state with localStorage and document lang attribute
   useEffect(() => {
-    document.documentElement.lang = language;
-    localStorage.setItem('language', language);
-  }, [language]);
+    // Only run this effect after the initial client-side setup
+    if (!isInitial) {
+      document.documentElement.lang = language;
+      localStorage.setItem('language', language);
+    }
+  }, [language, isInitial]);
 
   const value = {
     language,
     setLanguage,
   };
 
+  // Don't render children until the language has been determined on the client
+  if (isInitial && typeof window !== 'undefined') {
+    return null;
+  }
+  
   return (
     <LanguageContext.Provider value={value}>
       {children}

@@ -60,7 +60,7 @@ export function SettingsForm() {
             <h3 className="text-lg font-medium">Dil ve Bölge</h3>
              <div className="space-y-2">
                 <Label htmlFor="language">Dil</Label>
-                <Select name="language" defaultValue={language}>
+                <Select name="language" defaultValue={language} onValueChange={(value: 'tr' | 'en') => setLanguage(value)}>
                 <SelectTrigger id="language">
                     <SelectValue placeholder="Dil seçin" />
                 </SelectTrigger>

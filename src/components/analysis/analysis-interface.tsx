@@ -153,4 +153,3 @@ export function AnalysisInterface({ onReportSubmit }: AnalysisInterfaceProps) {
     )
 
 }
-    

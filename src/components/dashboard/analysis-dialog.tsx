@@ -343,7 +343,7 @@ export function AnalysisDialog({ open, onOpenChange, location, feedId, onAnalyze
                    Kareleri Yakala
                  </Button>
                  {progress > 0 && <Progress value={progress} className="w-full" />}
-                 {frames.length > 0 && <p className="text-sm text-success">{frames.length} kare başarıyla yakalandı.</p>}
+                 {frames.length > 0 && <p className="text-sm text-success">{frames.length > 0}</p>}
               </div>
             )}
 
