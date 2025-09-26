@@ -261,7 +261,7 @@ export function AnalysisDialog({ open, onOpenChange, location, feedId, onAnalyze
                     Risk Tespit Edildi
                 </Badge>
                 ) : (
-                <Badge className="bg-success hover:bg-success">
+                <Badge variant="success">
                     Risk Tespit Edilmedi
                 </Badge>
                 )}
@@ -337,7 +337,7 @@ export function AnalysisDialog({ open, onOpenChange, location, feedId, onAnalyze
 
             {videoFileName && (
               <div className="space-y-3">
-                 <video ref={videoRef} className="w-full rounded-md bg-black" controls muted />
+                 <video ref={videoRef} className="w-full rounded-md bg-black" controls muted></video>
                  <Button type="button" variant="secondary" onClick={captureFrames} disabled={progress > 0 && progress < 100}>
                    <Video className="mr-2"/>
                    Kareleri Yakala

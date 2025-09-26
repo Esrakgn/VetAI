@@ -216,7 +216,7 @@ export function BirthDetectionClient() {
 
                                 {videoFileName && (
                                     <div className="space-y-3">
-                                        <video ref={videoRef} className="w-full rounded-md bg-black" controls muted playsInline />
+                                        <video ref={videoRef} className="w-full rounded-md bg-black" controls muted playsInline></video>
                                         <Button type="button" variant="secondary" onClick={captureFrames} disabled={progress > 0 && progress < 100}>
                                             <Video className="mr-2"/>
                                             Kareleri Yakala

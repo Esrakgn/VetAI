@@ -158,10 +158,10 @@ export function NewbornAnalysisClient() {
   };
   
   const getRiskProps = (score: number | null) => {
-    if (score === null) return { variant: 'default', icon: ShieldCheck, label: 'Bilinmiyor' };
-    if (score >= 70) return { variant: 'destructive', icon: ShieldAlert, label: 'Yüksek Risk' };
-    if (score >= 40) return { variant: 'secondary', icon: ShieldCheck, label: 'Orta Risk' };
-    return { variant: 'success', icon: ShieldCheck, label: 'Düşük Risk' };
+    if (score === null) return { variant: 'default' as const, icon: ShieldCheck, label: 'Bilinmiyor' };
+    if (score >= 70) return { variant: 'destructive' as const, icon: ShieldAlert, label: 'Yüksek Risk' };
+    if (score >= 40) return { variant: 'secondary' as const, icon: ShieldCheck, label: 'Orta Risk' };
+    return { variant: 'success' as const, icon: ShieldCheck, label: 'Düşük Risk' };
   }
 
   const RiskIcon = getRiskProps(analysisResult?.riskScore ?? null).icon;
@@ -190,7 +190,7 @@ export function NewbornAnalysisClient() {
 
                         {videoFileName && (
                             <div className="space-y-3">
-                                <video ref={videoRef} className="w-full rounded-md bg-black" controls muted />
+                                <video ref={videoRef} className="w-full rounded-md bg-black" controls muted></video>
                                 <Button type="button" variant="secondary" onClick={captureFrames} disabled={progress > 0 && progress < 100}>
                                     <Video className="mr-2"/>
                                     Kareleri Yakala
