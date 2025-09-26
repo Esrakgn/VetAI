@@ -2,7 +2,6 @@
 'use client';
 
 import { useEffect } from 'react';
-import { Header } from '@/components/dashboard/header';
 import { StatCard } from '@/components/dashboard/stat-card';
 import { VideoFeeds } from '@/components/dashboard/video-feeds';
 import { RecentAlerts } from '@/components/dashboard/recent-alerts';
