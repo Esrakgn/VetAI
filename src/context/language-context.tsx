@@ -12,18 +12,15 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  // Initialize state from localStorage on the client side only
-  const [language, setLanguage] = useState<Language>(() => {
-    if (typeof window !== 'undefined') {
-      const savedLanguage = localStorage.getItem('language') as Language | null;
-      if (savedLanguage) {
-        return savedLanguage;
-      }
-    }
-    return 'tr'; // Default language
-  });
+  const [language, setLanguage] = useState<Language>('tr');
 
-  // Effect to update localStorage and document lang attribute on language change
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('language') as Language | null;
+    if (savedLanguage) {
+      setLanguage(savedLanguage);
+    }
+  }, []);
+
   useEffect(() => {
     document.documentElement.lang = language;
     localStorage.setItem('language', language);
