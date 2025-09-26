@@ -3,7 +3,6 @@
 import { useEffect } from 'react';
 import { StatCard } from '@/components/dashboard/stat-card';
 import { VideoFeeds } from '@/components/dashboard/video-feeds';
-import { RecentAlerts } from '@/components/dashboard/recent-alerts';
 import { Users, AlertTriangle, ShieldCheck } from 'lucide-react';
 import {
   useCollection,
@@ -76,13 +75,8 @@ export default function DashboardPage() {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-        <div className="lg:col-span-2">
-          <VideoFeeds onAnalyze={addAlert} />
-        </div>
-        <div className="space-y-8">
-          <RecentAlerts alerts={alerts || []} isLoading={isLoading} />
-        </div>
+      <div>
+        <VideoFeeds onAnalyze={addAlert} />
       </div>
     </>
   );
