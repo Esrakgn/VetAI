@@ -20,11 +20,14 @@ type AlertsTableProps = {
   isLoading: boolean;
 };
 
-const severityMap = {
-  'Yüksek': 'destructive',
-  'Orta': 'secondary',
-  'Düşük': 'outline',
-} as const;
+const trToEn: Record<string, string> = { 'Düşük': 'low', 'Orta': 'medium', 'Yüksek': 'high' };
+
+const severityMap: Record<string, "destructive" | "secondary" | "outline"> = {
+  'high': 'destructive',
+  'medium': 'secondary',
+  'low': 'outline',
+};
+
 
 export function AlertsTable({ alerts, isLoading }: AlertsTableProps) {
   return (
@@ -53,18 +56,21 @@ export function AlertsTable({ alerts, isLoading }: AlertsTableProps) {
                 </TableRow>
               ))
             ) : alerts.length > 0 ? (
-              alerts.map((alert) => (
-                <TableRow key={alert.id}>
-                  <TableCell className="font-medium">{alert.animalId}</TableCell>
-                  <TableCell>{alert.description}</TableCell>
-                  <TableCell>
-                    <Badge variant={severityMap[alert.severity] || 'default'}>{alert.severity}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    {format(new Date(alert.timestamp), 'PPP p', { locale: tr })}
-                  </TableCell>
-                </TableRow>
-              ))
+              alerts.map((alert) => {
+                const severityKey = trToEn[alert.severity] ?? alert.severity;
+                return (
+                  <TableRow key={alert.id}>
+                    <TableCell className="font-medium">{alert.animalId}</TableCell>
+                    <TableCell>{alert.description}</TableCell>
+                    <TableCell>
+                      <Badge variant={severityMap[severityKey] || 'default'}>{alert.severity}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      {format(new Date(alert.timestamp), 'PPP p', { locale: tr })}
+                    </TableCell>
+                  </TableRow>
+                )
+              })
             ) : (
               <TableRow>
                 <TableCell colSpan={4} className="h-24 text-center">

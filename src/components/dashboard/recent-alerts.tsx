@@ -17,11 +17,13 @@ export type Alert = {
   severity: 'Yüksek' | 'Orta' | 'Düşük';
 };
 
-const severityMap = {
-  'Yüksek': 'destructive',
-  'Orta': 'secondary',
-  'Düşük': 'outline',
-} as const;
+const trToEn: Record<string, string> = { 'Düşük': 'low', 'Orta': 'medium', 'Yüksek': 'high' };
+
+const severityMap: Record<string, "destructive" | "secondary" | "outline"> = {
+  'high': 'destructive',
+  'medium': 'secondary',
+  'low': 'outline',
+};
 
 type RecentAlertsProps = {
   alerts: Alert[];
@@ -46,26 +48,29 @@ export function RecentAlerts({ alerts, isLoading }: RecentAlertsProps) {
           ) : alerts.length === 0 ? (
             <p className="text-sm text-muted-foreground">Aktif alarm bulunmamaktadır.</p>
           ) : (
-            alerts.slice(0, 3).map(alert => (
-              <div key={alert.id} className="flex items-start gap-4">
-                <div className="mt-1">
-                  <AlertCircle className="h-5 w-5 text-destructive" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex justify-between items-center">
-                    <p className="text-sm font-semibold text-foreground">{alert.animalId}</p>
-                    <Badge variant={severityMap[alert.severity] || 'default'}>
-                      {alert.severity}
-                    </Badge>
+            alerts.slice(0, 3).map(alert => {
+              const severityKey = trToEn[alert.severity] ?? alert.severity;
+              return (
+                <div key={alert.id} className="flex items-start gap-4">
+                  <div className="mt-1">
+                    <AlertCircle className="h-5 w-5 text-destructive" />
                   </div>
-                  <p className="text-sm text-muted-foreground">{alert.description}</p>
-                  <div className="flex items-center text-xs text-muted-foreground/80 mt-1">
-                    <Clock4 className="h-3 w-3 mr-1.5" />
-                    <span>{formatDistanceToNow(new Date(alert.timestamp), { addSuffix: true, locale: tr })}</span>
+                  <div className="flex-1">
+                    <div className="flex justify-between items-center">
+                      <p className="text-sm font-semibold text-foreground">{alert.animalId}</p>
+                      <Badge variant={severityMap[severityKey] || 'default'}>
+                        {alert.severity}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{alert.description}</p>
+                    <div className="flex items-center text-xs text-muted-foreground/80 mt-1">
+                      <Clock4 className="h-3 w-3 mr-1.5" />
+                      <span>{formatDistanceToNow(new Date(alert.timestamp), { addSuffix: true, locale: tr })}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       </CardContent>
