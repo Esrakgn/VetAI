@@ -67,14 +67,6 @@ export function RecentAlerts({ alerts, isLoading }: RecentAlertsProps) {
           )}
         </div>
       </CardContent>
-      <CardFooter>
-        <Button variant="outline" className="w-full" asChild>
-          <Link href="/history">
-            Tüm Alarmları Görüntüle
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Link>
-        </Button>
-      </CardFooter>
     </Card>
   );
 }
