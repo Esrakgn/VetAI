@@ -4,7 +4,6 @@ import { ThemeProvider } from '@/components/theme-provider';
 import './globals.css';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { LanguageProvider } from '@/context/language-context';
-import { AppLayout } from '@/components/layout/app-layout';
 
 export const metadata: Metadata = {
   title: 'VetAI',
@@ -34,9 +33,7 @@ export default function RootLayout({
               disableTransitionOnChange
             >
               <FirebaseClientProvider>
-                <AppLayout>
                   {children}
-                </AppLayout>
               </FirebaseClientProvider>
               <Toaster />
             </ThemeProvider>
