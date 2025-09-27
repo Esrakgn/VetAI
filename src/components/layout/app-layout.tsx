@@ -11,17 +11,17 @@ import { SidebarNav } from './sidebar-nav';
 export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider>
-      <SidebarNav />
-      <SidebarInset>
-        <div className="flex flex-col min-h-screen">
-          <Header />
-          <main className="flex-1 p-4 sm:p-6 lg:p-8">
-            <div className="container mx-auto">
-                {children}
-            </div>
-          </main>
-        </div>
-      </SidebarInset>
+      <div className="flex min-h-screen">
+        <SidebarNav />
+        <SidebarInset>
+            <Header />
+            <main className="flex-1 p-4 sm:p-6 lg:p-8">
+              <div className="container mx-auto">
+                  {children}
+              </div>
+            </main>
+        </SidebarInset>
+      </div>
     </SidebarProvider>
   );
 }
