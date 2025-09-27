@@ -1,87 +1,81 @@
 'use client';
 
-import Link from 'next/link';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { AlertCircle, Clock4, ArrowRight } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { formatDistanceToNow } from 'date-fns';
-import { tr } from 'date-fns/locale';
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Clock4 } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
+import { tr } from "date-fns/locale";
 import { Skeleton } from '../ui/skeleton';
 
-export type Alert = {
+type Alert = {
   id: string;
   animalId: string;
   description: string;
-  timestamp: string;
-  severity: 'Yüksek' | 'Orta' | 'Düşük';
+  timestamp: string | number | Date;
+  severity: "low" | "medium" | "high" | "critical" | string; // toleranslı
 };
 
-const trToEn: Record<string, string> = { 'Düşük': 'low', 'Orta': 'medium', 'Yüksek': 'high' };
-
-const severityMap: Record<string, "destructive" | "secondary" | "outline"> = {
-  'high': 'destructive',
-  'medium': 'secondary',
-  'low': 'outline',
-};
-
-type RecentAlertsProps = {
+export type RecentAlertsProps = {
   alerts: Alert[];
   isLoading: boolean;
 };
 
+const severityMap: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+  low: "secondary",
+  medium: "default",
+  high: "outline",
+  critical: "destructive",
+};
+
 export function RecentAlerts({ alerts, isLoading }: RecentAlertsProps) {
+  // Dedupe + stabil key (olası çift kayda karşı)
+  const unique = Array.from(new Map(alerts.map(a => [a.id, a])).values());
+
   return (
     <Card>
       <CardHeader>
         <CardTitle className="font-headline">Son Anormallik Alarmları</CardTitle>
         <CardDescription>Hayvanlarınızdan gelen kritik uyarılar.</CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {isLoading ? (
-            <>
+      <CardContent className="space-y-4">
+        {isLoading && (
+            <div className="space-y-4">
               <Skeleton className="h-16 w-full" />
               <Skeleton className="h-16 w-full" />
               <Skeleton className="h-16 w-full" />
-            </>
-          ) : alerts.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Aktif alarm bulunmamaktadır.</p>
-          ) : (
-            alerts.slice(0, 3).map(alert => {
-              const severityKey = trToEn[alert.severity] ?? alert.severity;
+            </div>
+        )}
+
+        {!isLoading && unique.length === 0 && (
+          <div className="rounded-md border p-4 text-center text-muted-foreground">
+            Aktif alarm bulunmamaktadır.
+          </div>
+        )}
+
+        {!isLoading && unique.length > 0 && (
+          <div className="space-y-4">
+            {unique.slice(0, 5).map((alert) => {
+              const sev = typeof alert.severity === "string"
+                ? alert.severity.toLowerCase()
+                : String(alert.severity);
+              const ts = new Date(alert.timestamp);
               return (
-                <div key={alert.id} className="flex items-start gap-4">
-                  <div className="mt-1">
-                    <AlertCircle className="h-5 w-5 text-destructive" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex justify-between items-center">
-                      <p className="text-sm font-semibold text-foreground">{alert.animalId}</p>
-                      <Badge variant={severityMap[severityKey] || 'default'}>
-                        {alert.severity}
-                      </Badge>
-                    </div>
+                <div key={alert.id} className="flex items-start justify-between gap-4">
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold text-foreground">{alert.animalId}</p>
                     <p className="text-sm text-muted-foreground">{alert.description}</p>
-                    <div className="flex items-center text-xs text-muted-foreground/80 mt-1">
-                      <Clock4 className="h-3 w-3 mr-1.5" />
-                      <span>{formatDistanceToNow(new Date(alert.timestamp), { addSuffix: true, locale: tr })}</span>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground/80 mt-1">
+                      <Clock4 className="h-3 w-3 -mt-[2px]" />
+                      <span>{formatDistanceToNow(ts, { addSuffix: true, locale: tr })}</span>
                     </div>
                   </div>
+                  <Badge variant={severityMap[sev] || "default"} className="whitespace-nowrap">{alert.severity}</Badge>
                 </div>
               );
-            })
-          )}
-        </div>
+            })}
+          </div>
+        )}
       </CardContent>
-       <CardFooter>
-        <Button asChild variant="outline" className="w-full">
-            <Link href="/history">
-                Tüm Alarmları Görüntüle
-                <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-        </Button>
-      </CardFooter>
     </Card>
   );
 }
