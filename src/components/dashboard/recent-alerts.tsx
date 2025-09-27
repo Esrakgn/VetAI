@@ -20,16 +20,20 @@ export type RecentAlertsProps = {
   isLoading: boolean;
 };
 
+const trToEn: Record<string, string> = { 'Düşük': 'low', 'Orta': 'medium', 'Yüksek': 'high', 'Kritik': 'critical' };
+
 const severityMap: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-  low: "secondary",
-  medium: "default",
-  high: "outline",
-  critical: "destructive",
+  'high': 'destructive',
+  'medium': 'secondary',
+  'low': 'outline',
+  'critical': 'destructive',
 };
+
 
 export function RecentAlerts({ alerts, isLoading }: RecentAlertsProps) {
   // Dedupe + stabil key (olası çift kayda karşı)
   const unique = Array.from(new Map(alerts.map(a => [a.id, a])).values());
+  console.log("RecentAlerts render count:", Date.now(), alerts.length);
 
   return (
     <Card>
@@ -55,9 +59,7 @@ export function RecentAlerts({ alerts, isLoading }: RecentAlertsProps) {
         {!isLoading && unique.length > 0 && (
           <div className="space-y-4">
             {unique.slice(0, 5).map((alert) => {
-              const sev = typeof alert.severity === "string"
-                ? alert.severity.toLowerCase()
-                : String(alert.severity);
+              const sev = trToEn[alert.severity] ?? alert.severity.toLowerCase();
               const ts = new Date(alert.timestamp);
               return (
                 <div key={alert.id} className="flex items-start justify-between gap-4">
