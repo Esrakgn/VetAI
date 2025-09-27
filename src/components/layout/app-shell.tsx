@@ -1,9 +1,26 @@
+'use client';
+import { Header } from '@/components/dashboard/header';
+import {
+  SidebarProvider,
+  SidebarInset,
+} from '@/components/ui/sidebar';
+import { SidebarNav } from './sidebar-nav';
+
+
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
-    <div data-probe="APPSHELL" style={{ outline: '2px dashed #888', padding: 8 }}>
-      <div>APPSHELL (tek olmalı)</div>
-      {children}
-      {/* !!! Burada ikinci bir {children} KESİNLİKLE OLMAMALI !!! */}
-    </div>
+    <SidebarProvider>
+      <div className="flex min-h-screen">
+        <SidebarNav />
+        <SidebarInset>
+            <Header />
+            <main className="flex-1 p-4 sm:p-6 lg:p-8">
+              <div className="container mx-auto">
+                  {children}
+              </div>
+            </main>
+        </SidebarInset>
+      </div>
+    </SidebarProvider>
   );
 }
