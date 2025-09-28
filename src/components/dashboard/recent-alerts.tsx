@@ -7,12 +7,16 @@ import { formatDistanceToNow } from "date-fns";
 import { tr } from "date-fns/locale";
 import { Skeleton } from '../ui/skeleton';
 
-type Alert = {
+export type Alert = {
   id: string;
   animalId: string;
   description: string;
   timestamp: string | number | Date;
   severity: "low" | "medium" | "high" | "critical" | string; // toleranslı
+  isResolved?: boolean;
+  alertType?: string;
+  message?: string;
+  userId?: string;
 };
 
 export type RecentAlertsProps = {
@@ -33,7 +37,6 @@ const severityMap: Record<string, "default" | "secondary" | "destructive" | "out
 export function RecentAlerts({ alerts, isLoading }: RecentAlertsProps) {
   // Dedupe + stabil key (olası çift kayda karşı)
   const unique = Array.from(new Map(alerts.map(a => [a.id, a])).values());
-  console.log("RecentAlerts render count:", Date.now(), alerts.length);
 
   return (
     <Card>

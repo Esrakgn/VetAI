@@ -5,11 +5,11 @@ import { useState, useCallback, useEffect } from 'react';
 import { collection, addDoc, serverTimestamp, query, orderBy, limit } from 'firebase/firestore';
 import { useFirestore, useUser, useCollection, useMemoFirebase, initiateAnonymousSignIn, useAuth } from '@/firebase';
 import { StatCard } from '@/components/dashboard/stat-card';
-import { RecentAlerts } from '@/components/dashboard/recent-alerts';
+import { RecentAlerts, type Alert } from '@/components/dashboard/recent-alerts';
 import { VideoFeeds } from '@/components/dashboard/video-feeds';
 import { Activity, ShieldAlert, PawPrint, AlertCircle } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
-import type { Alert } from '@/components/dashboard/recent-alerts';
+
 
 export default function DashboardPage() {
   const { toast } = useToast();
