@@ -1,9 +1,9 @@
+
 'use client';
 
-import { useState, useCallback } from 'react';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { useFirestore, useUser } from '@/firebase';
-import { useCollection } from '@/firebase';
+import { useState, useCallback, useEffect } from 'react';
+import { collection, addDoc, serverTimestamp, query, orderBy, limit } from 'firebase/firestore';
+import { useFirestore, useUser, useCollection, useMemoFirebase, initiateAnonymousSignIn, useAuth } from '@/firebase';
 import { StatCard } from '@/components/dashboard/stat-card';
 import { RecentAlerts } from '@/components/dashboard/recent-alerts';
 import { VideoFeeds } from '@/components/dashboard/video-feeds';
@@ -14,13 +14,39 @@ import type { Alert } from '@/components/dashboard/recent-alerts';
 export default function DashboardPage() {
   const { toast } = useToast();
   const firestore = useFirestore();
-  const { user } = useUser();
-  const [localAlerts, setLocalAlerts] = useState<Alert[]>([]);
+  const auth = useAuth();
+  const { user, isUserLoading } = useUser();
 
-  const alertsQuery = user ? collection(firestore, 'users', user.uid, 'alerts') : null;
-  const { data: remoteAlerts, isLoading } = useCollection<Alert>(alertsQuery);
+  useEffect(() => {
+    if (!isUserLoading && !user) {
+      initiateAnonymousSignIn(auth);
+    }
+  }, [isUserLoading, user, auth]);
+
+  const alertsQuery = useMemoFirebase(
+    () =>
+      user
+        ? query(
+            collection(firestore, 'users', user.uid, 'alerts'),
+            orderBy('timestamp', 'desc'),
+            limit(5)
+          )
+        : null,
+    [firestore, user]
+  );
+  
+  const { data: alerts, isLoading } = useCollection<Alert>(alertsQuery);
 
   const handleNewAnomaly = useCallback(async (location: string, anomaly: string) => {
+    if (!user || !firestore) {
+      toast({
+        variant: 'destructive',
+        title: 'Hata',
+        description: 'Kullanıcı oturumu aktif değil. Alarm oluşturulamadı.',
+      });
+      return;
+    }
+
     const newAlert: Omit<Alert, 'id' | 'timestamp'> & { timestamp: any } = {
       animalId: location,
       description: anomaly,
@@ -29,30 +55,16 @@ export default function DashboardPage() {
       isResolved: false,
       alertType: 'Behavioral Anomaly',
       message: `Abnormal behavior detected: ${anomaly}`,
-      userId: user?.uid ?? 'unknown',
+      userId: user.uid,
     };
 
     try {
-      if (user && firestore) {
-        // Add to Firestore
-        await addDoc(collection(firestore, 'users', user.uid, 'alerts'), newAlert);
-      } else {
-        // Fallback to local state if user/firestore is not available
-        const localNewAlert: Alert = {
-          ...newAlert,
-          id: `local-${Date.now()}`,
-          timestamp: new Date().toISOString(),
-        };
-        setLocalAlerts(prev => [localNewAlert, ...prev]);
-        console.warn("User or Firestore not available, alert saved to local state.");
-      }
-      
+      await addDoc(collection(firestore, 'users', user.uid, 'alerts'), newAlert);
       toast({
         variant: 'destructive',
         title: 'Alarm: Anormallik Tespit Edildi',
         description: `${location}: ${anomaly}`,
       });
-
     } catch (error) {
       console.error("Error creating alert:", error);
       toast({
@@ -63,13 +75,9 @@ export default function DashboardPage() {
     }
   }, [user, firestore, toast]);
 
-  const allAlerts = [...localAlerts, ...(remoteAlerts || [])]
-    .sort((a, b) => new Date(b.timestamp as string).getTime() - new Date(a.timestamp as string).getTime());
-
-  const uniqueAlerts = Array.from(new Map(allAlerts.map(a => [a.id, a])).values());
-
   const totalAnimals = 58;
-  const healthyAnimals = totalAnimals - uniqueAlerts.length;
+  const activeAlertsCount = alerts?.filter(a => !a.isResolved).length ?? 0;
+  const healthyAnimals = totalAnimals - activeAlertsCount;
 
   return (
     <>
@@ -92,7 +100,7 @@ export default function DashboardPage() {
         />
         <StatCard
           title="Aktif Alarmlar"
-          value={uniqueAlerts.length.toString()}
+          value={activeAlertsCount.toString()}
           icon={<ShieldAlert className="text-muted-foreground" />}
           description="Müdahale gerektiren uyarılar"
         />
@@ -108,7 +116,7 @@ export default function DashboardPage() {
           <VideoFeeds onAnalyze={handleNewAnomaly} />
         </div>
         <div className="lg:col-span-1">
-          <RecentAlerts alerts={uniqueAlerts} isLoading={isLoading} />
+          <RecentAlerts alerts={alerts ?? []} isLoading={isLoading} />
         </div>
       </div>
     </>
