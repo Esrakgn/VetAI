@@ -1,7 +1,6 @@
-
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { collection, addDoc, serverTimestamp, query, orderBy, limit } from 'firebase/firestore';
 import { useFirestore, useUser, useCollection, useMemoFirebase, initiateAnonymousSignIn, useAuth } from '@/firebase';
 import { StatCard } from '@/components/dashboard/stat-card';
@@ -16,9 +15,11 @@ export default function DashboardPage() {
   const firestore = useFirestore();
   const auth = useAuth();
   const { user, isUserLoading } = useUser();
+  const signInTriedRef = useRef(false);
 
   useEffect(() => {
-    if (!isUserLoading && !user) {
+    if (!isUserLoading && !user && !signInTriedRef.current) {
+      signInTriedRef.current = true;
       initiateAnonymousSignIn(auth);
     }
   }, [isUserLoading, user, auth]);
