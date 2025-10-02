@@ -1,16 +1,17 @@
 'use client';
 
-import { useCollection, useFirestore, useUser, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore, useUser } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import { AlertsTable } from '@/components/history/alerts-table';
+import { useMemo } from 'react';
 
 export default function HistoryPage() {
   const firestore = useFirestore();
   const { user } = useUser();
 
-  const alertsQuery = useMemoFirebase(() => 
+  const alertsQuery = useMemo(() => 
     user ? collection(firestore, 'users', user.uid, 'alerts') : null
-  , [firestore, user]);
+  , [firestore, user?.uid]);
 
   const { data: alerts, isLoading } = useCollection(alertsQuery);
 
