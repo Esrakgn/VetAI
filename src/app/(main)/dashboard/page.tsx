@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { collection, addDoc, serverTimestamp, query, orderBy, limit } from 'firebase/firestore';
-import { useFirestore, useUser, useCollection, useMemoFirebase, initiateAnonymousSignIn, useAuth } from '@/firebase';
+import { useFirestore, useUser, useCollection, initiateAnonymousSignIn, useAuth } from '@/firebase';
 import { StatCard } from '@/components/dashboard/stat-card';
 import { RecentAlerts, type Alert } from '@/components/dashboard/recent-alerts';
 import { VideoFeeds } from '@/components/dashboard/video-feeds';
@@ -24,7 +24,7 @@ export default function DashboardPage() {
     }
   }, [isUserLoading, user, auth]);
 
-  const alertsQuery = useMemoFirebase(
+  const alertsQuery = useMemo(
     () =>
       user
         ? query(
