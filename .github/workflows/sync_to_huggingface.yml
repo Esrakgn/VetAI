@@ -1,0 +1,24 @@
+name: Sync to Hugging Face Hub
+
+on:
+  push:
+    branches: [main, master]
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Sync with Hugging Face Hub
+        uses: repo-sync/sync@v2
+        with:
+          source_repo: "https://github.com/${{ github.repository }}" 
+          source_branch: "main"
+          
+          destination_repo: "https://huggingface.co/esakgn/vetai" 
+          
+          destination_branch: "main"
+          destination_repo_access_token: ${{ secrets.HF_TOKEN }}
